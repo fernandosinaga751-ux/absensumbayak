@@ -578,9 +578,9 @@ async function submitRsvp(status) {
   activeBtn.textContent = 'Menyimpan...';
 
   try {
-    // Cek apakah nama sudah ada
+    // Cek apakah nama sudah ada (case-insensitive)
     const checkRes = await fetch(
-      SB_URL + '/rest/v1/partonggoan_rsvp?nama=eq.' + encodeURIComponent(nama) + '&select=id,status,jumlah',
+      SB_URL + '/rest/v1/partonggoan_rsvp?nama=ilike.' + encodeURIComponent(nama) + '&select=id,status,jumlah',
       { headers: H }
     );
     const existing = await checkRes.json();
@@ -617,7 +617,8 @@ async function submitRsvp(status) {
     jumlah = 1;
     document.getElementById('jumlahDisplay').textContent = '1';
     toggleRsvp();
-    setTimeout(loadAttendees, 600);
+    setTimeout(loadAttendees, 800);
+    setTimeout(loadAttendees, 2500);
   } catch(e) {
     console.error(e);
     showToast('Gagal menyimpan. Coba lagi.', 'err');
@@ -651,7 +652,8 @@ function sendWA(nama, jumlah, status, isUpdate) {
 /* ---- Load attendees ---- */
 async function loadAttendees() {
   try {
-    const r = await fetch(SB_URL + '/rest/v1/partonggoan_rsvp?select=*&order=created_at.desc', { headers: H });
+    const noCache = Object.assign({}, H, { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' });
+    const r = await fetch(SB_URL + '/rest/v1/partonggoan_rsvp?select=*&order=created_at.desc&_t=' + Date.now(), { headers: noCache });
     const d = await r.json();
     if (!Array.isArray(d)) return;
     renderList(d);
