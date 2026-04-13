@@ -522,7 +522,21 @@ async function loadMembers() {
 const namaInput = document.getElementById('namaInput');
 const acList    = document.getElementById('autocompleteList');
 
-namaInput.addEventListener('input', showSuggestions);
+let _pfTimer = null;
+namaInput.addEventListener('input', function() {
+  showSuggestions();
+  clearTimeout(_pfTimer);
+  _pfTimer = setTimeout(function() {
+    const nm = namaInput.value.trim();
+    if (nm) {
+      prefillIfExists(nm);
+    } else {
+      jumlah = 1;
+      document.getElementById('jumlahDisplay').textContent = '1';
+      document.getElementById('existingInfo').style.display = 'none';
+    }
+  }, 400);
+});
 namaInput.addEventListener('focus', showSuggestions);
 
 function showSuggestions() {
@@ -592,6 +606,8 @@ async function submitRsvp(status) {
   const nama = namaInput.value.trim();
   if (!nama) { showToast('Nama harus diisi!', 'err'); return; }
 
+  /* Kalau ijin, jumlah tidak relevan → paksa 1 */
+  const jmlFinal = status === 'hadir' ? jumlah : 1;
   const btnYes = document.getElementById('btnYes');
   const btnNo  = document.getElementById('btnNo');
   btnYes.disabled = true;
@@ -612,18 +628,18 @@ async function submitRsvp(status) {
     let saveErr, isUpdate = false;
 
     if (existing && existing.length > 0) {
-      /* UPDATE */
+      /* UPDATE — tidak akan double data */
       isUpdate = true;
       const { error } = await sb
         .from('partonggoan_rsvp')
-        .update({ jumlah: jumlah, status: status })
+        .update({ jumlah: jmlFinal, status: status })
         .eq('id', existing[0].id);
       saveErr = error;
     } else {
-      /* INSERT */
+      /* INSERT — data baru */
       const { error } = await sb
         .from('partonggoan_rsvp')
-        .insert({ nama: nama, jumlah: jumlah, status: status });
+        .insert({ nama: nama, jumlah: jmlFinal, status: status });
       saveErr = error;
     }
 
@@ -634,7 +650,7 @@ async function submitRsvp(status) {
       ? (isHadir ? 'Data diperbarui! Sampai jumpa \uD83C\uDF89' : 'Data diperbarui! Ijin dicatat \uD83D\uDE4F')
       : (isHadir ? 'Terima kasih! Sampai jumpa! \uD83C\uDF89' : 'Baik, ijin dicatat! \uD83D\uDE4F');
     showToast(msg, 'ok');
-    sendWA(nama, jumlah, status, isUpdate);
+    sendWA(nama, jmlFinal, status, isUpdate);
 
     namaInput.value = '';
     jumlah = 1;
