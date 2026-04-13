@@ -489,23 +489,33 @@ body {
 
 <div class="toast" id="toast"></div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
+/* =====================================================
+   CONFIG
+   ===================================================== */
 const SB_URL = 'https://ojbpbgxyehsqbowemnyn.supabase.co';
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9qYnBiZ3h5ZWhzcWJvd2VtbnluIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE5MDY4MTksImV4cCI6MjA4NzQ4MjgxOX0.KR_4u6Ph3aFM-ZLqRRYztVlbgKNUi7mvrMOyb7k1U_U';
-const H = {
-  'Content-Type': 'application/json',
-  'apikey': SB_KEY,
-  'Authorization': 'Bearer ' + SB_KEY
-};
 
+/* Supabase JS client */
+const sb = supabase.createClient(SB_URL, SB_KEY, {
+  realtime: { params: { eventsPerSecond: 10 } }
+});
+
+/* =====================================================
+   STATE
+   ===================================================== */
 let members = [], jumlah = 1, rsvpOpen = false;
+let rsvpCache = {};
 
-/* ---- Members autocomplete ---- */
+/* =====================================================
+   MEMBERS AUTOCOMPLETE
+   ===================================================== */
 async function loadMembers() {
   try {
-    const r = await fetch(SB_URL + '/rest/v1/anggota?select=nama&order=nama', { headers: H });
-    const d = await r.json();
-    members = Array.isArray(d) ? d.map(x => x.nama).filter(Boolean) : [];
+    const { data, error } = await sb.from('anggota').select('nama').order('nama');
+    if (error) throw error;
+    members = Array.isArray(data) ? data.map(x => x.nama).filter(Boolean) : [];
   } catch(e) { console.error('loadMembers:', e); }
 }
 
@@ -540,11 +550,21 @@ document.addEventListener('click', function(e) {
   if (!e.target.closest('.name-input-wrap')) acList.classList.remove('show');
 });
 
-/* ---- Jumlah ---- */
-document.getElementById('btnMin').addEventListener('click',  function() { jumlah = Math.max(1, jumlah-1); document.getElementById('jumlahDisplay').textContent = jumlah; });
-document.getElementById('btnPlus').addEventListener('click', function() { jumlah = Math.min(20, jumlah+1); document.getElementById('jumlahDisplay').textContent = jumlah; });
+/* =====================================================
+   JUMLAH BUTTONS
+   ===================================================== */
+document.getElementById('btnMin').addEventListener('click', function() {
+  jumlah = Math.max(1, jumlah - 1);
+  document.getElementById('jumlahDisplay').textContent = jumlah;
+});
+document.getElementById('btnPlus').addEventListener('click', function() {
+  jumlah = Math.min(20, jumlah + 1);
+  document.getElementById('jumlahDisplay').textContent = jumlah;
+});
 
-/* ---- Toggle RSVP ---- */
+/* =====================================================
+   TOGGLE RSVP PANEL
+   ===================================================== */
 function toggleRsvp() {
   rsvpOpen = !rsvpOpen;
   const dd  = document.getElementById('rsvpDropdown');
@@ -557,7 +577,7 @@ function toggleRsvp() {
     btn.style.borderColor = '#4caf50';
     btn.style.color = '#c8f7c5';
     btn.style.animationPlayState = 'paused';
-    setTimeout(function() { dd.scrollIntoView({ behavior:'smooth', block:'start' }); }, 100);
+    setTimeout(function() { dd.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 100);
   } else {
     dd.classList.remove('open');
     arr.style.transform = '';
@@ -565,7 +585,9 @@ function toggleRsvp() {
   }
 }
 
-/* ---- Submit ---- */
+/* =====================================================
+   SUBMIT RSVP
+   ===================================================== */
 async function submitRsvp(status) {
   const nama = namaInput.value.trim();
   if (!nama) { showToast('Nama harus diisi!', 'err'); return; }
@@ -578,49 +600,53 @@ async function submitRsvp(status) {
   activeBtn.textContent = 'Menyimpan...';
 
   try {
-    // Cek apakah nama sudah ada (case-insensitive)
-    const checkRes = await fetch(
-      SB_URL + '/rest/v1/partonggoan_rsvp?nama=ilike.' + encodeURIComponent(nama) + '&select=id,status,jumlah',
-      { headers: H }
-    );
-    const existing = await checkRes.json();
+    /* Cek apakah nama sudah ada (case-insensitive) */
+    const { data: existing, error: checkErr } = await sb
+      .from('partonggoan_rsvp')
+      .select('id, status, jumlah')
+      .ilike('nama', nama)
+      .limit(1);
 
-    let res, isUpdate = false;
+    if (checkErr) throw checkErr;
+
+    let saveErr, isUpdate = false;
 
     if (existing && existing.length > 0) {
-      // UPDATE — data sudah ada, tidak double
-      const id = existing[0].id;
+      /* UPDATE */
       isUpdate = true;
-      res = await fetch(SB_URL + '/rest/v1/partonggoan_rsvp?id=eq.' + id, {
-        method: 'PATCH',
-        headers: Object.assign({}, H, { 'Prefer': 'return=minimal' }),
-        body: JSON.stringify({ jumlah, status })
-      });
+      const { error } = await sb
+        .from('partonggoan_rsvp')
+        .update({ jumlah: jumlah, status: status })
+        .eq('id', existing[0].id);
+      saveErr = error;
     } else {
-      // INSERT — data baru
-      res = await fetch(SB_URL + '/rest/v1/partonggoan_rsvp', {
-        method: 'POST',
-        headers: Object.assign({}, H, { 'Prefer': 'return=minimal' }),
-        body: JSON.stringify({ nama, jumlah, status })
-      });
+      /* INSERT */
+      const { error } = await sb
+        .from('partonggoan_rsvp')
+        .insert({ nama: nama, jumlah: jumlah, status: status });
+      saveErr = error;
     }
 
-    if (!res.ok) { const t = await res.text(); throw new Error(t); }
+    if (saveErr) throw saveErr;
 
+    const isHadir = status === 'hadir';
     const msg = isUpdate
-      ? (status === 'hadir' ? 'Data diperbarui! Sampai jumpa \uD83C\uDF89' : 'Data diperbarui! Ijin dicatat \uD83D\uDE4F')
-      : (status === 'hadir' ? 'Terima kasih! Sampai jumpa! \uD83C\uDF89' : 'Baik, ijin dicatat! \uD83D\uDE4F');
+      ? (isHadir ? 'Data diperbarui! Sampai jumpa \uD83C\uDF89' : 'Data diperbarui! Ijin dicatat \uD83D\uDE4F')
+      : (isHadir ? 'Terima kasih! Sampai jumpa! \uD83C\uDF89' : 'Baik, ijin dicatat! \uD83D\uDE4F');
     showToast(msg, 'ok');
     sendWA(nama, jumlah, status, isUpdate);
 
     namaInput.value = '';
     jumlah = 1;
     document.getElementById('jumlahDisplay').textContent = '1';
+    document.getElementById('existingInfo').style.display = 'none';
     toggleRsvp();
-    setTimeout(loadAttendees, 800);
-    setTimeout(loadAttendees, 2500);
+
+    /* Realtime akan auto-refresh, ini hanya safety fallback */
+    setTimeout(loadAttendees, 600);
+
   } catch(e) {
-    console.error(e);
+    console.error('submitRsvp error:', e);
     showToast('Gagal menyimpan. Coba lagi.', 'err');
   } finally {
     btnYes.disabled = false;
@@ -633,49 +659,47 @@ async function submitRsvp(status) {
 document.getElementById('btnYes').addEventListener('click', function() { submitRsvp('hadir'); });
 document.getElementById('btnNo').addEventListener('click',  function() { submitRsvp('ijin');  });
 
-/* ---- WhatsApp ---- */
+/* =====================================================
+   WHATSAPP
+   ===================================================== */
 function sendWA(nama, jumlah, status, isUpdate) {
   const stTxt = status === 'hadir'
-    ? '✅ *HADIR* (' + jumlah + ' orang)'
-    : '🙏 *IJIN TIDAK HADIR*';
-  const prefix = isUpdate ? '🔄 *Perubahan Konfirmasi*' : '🔔 *Konfirmasi Kehadiran*';
-  const msg =
-    prefix + ' Partonggoan\n' +
-    '📅 Minggu, 19 April 2026 | 13.00 WIB\n' +
-    '📍 Jl. Pembangunan 3, Medan Timur\n\n' +
-    '👤 Nama: *' + nama + '*\n' +
+    ? '\u2705 *HADIR* (' + jumlah + ' orang)'
+    : '\uD83D\uDE4F *IJIN* Tidak Hadir';
+  const prefix = isUpdate ? '\uD83D\uDD04 *Perubahan Konfirmasi*' : '\uD83D\uDD14 *Konfirmasi Kehadiran*';
+  const msg = prefix + '\n\n' +
+    '\uD83D\uDC64 Nama: *' + nama + '*\n' +
     'Status: ' + stTxt + '\n\n' +
     '_Via Flyer Digital TSBP Medan Timur_';
   window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
 }
 
-/* ---- Load attendees ---- */
+/* =====================================================
+   LOAD & RENDER ATTENDEES
+   ===================================================== */
 async function loadAttendees() {
   try {
-    const noCache = Object.assign({}, H, { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' });
-    const r = await fetch(SB_URL + '/rest/v1/partonggoan_rsvp?select=*&order=created_at.desc&_t=' + Date.now(), { headers: noCache });
-    const d = await r.json();
-    if (!Array.isArray(d)) return;
-    renderList(d);
+    const { data, error } = await sb
+      .from('partonggoan_rsvp')
+      .select('*')
+      .order('created_at', { ascending: false });
+    if (error) throw error;
+    renderList(data || []);
   } catch(e) { console.error('loadAttendees:', e); }
 }
 
-// Cache rsvp data for prefill
-let rsvpCache = {};
-
 function renderList(data) {
-  const listEl   = document.getElementById('attendeeList');
-  const countEl  = document.getElementById('listCount');
-  const hadirEl  = document.getElementById('totalHadir');
-  const ijinEl   = document.getElementById('totalIjin');
+  const listEl  = document.getElementById('attendeeList');
+  const countEl = document.getElementById('listCount');
+  const hadirEl = document.getElementById('totalHadir');
+  const ijinEl  = document.getElementById('totalIjin');
 
-  // Update cache for prefill
   rsvpCache = {};
   data.forEach(function(d) { rsvpCache[d.nama.toLowerCase()] = d; });
 
-  const hadir = data.filter(function(d) { return d.status === 'hadir'; });
-  const ijin  = data.filter(function(d) { return d.status === 'ijin'; });
-  const totalOrg = hadir.reduce(function(s,d){ return s + (d.jumlah||1); }, 0);
+  const hadir    = data.filter(function(d) { return d.status === 'hadir'; });
+  const ijin     = data.filter(function(d) { return d.status === 'ijin'; });
+  const totalOrg = hadir.reduce(function(s, d) { return s + (d.jumlah || 1); }, 0);
 
   countEl.textContent = data.length + ' anggota';
   hadirEl.textContent = hadir.length + ' (' + totalOrg + ' org)';
@@ -693,16 +717,18 @@ function renderList(data) {
         '<span class="status-badge ' + (d.status === 'hadir' ? 'badge-hadir' : 'badge-ijin') + '">' +
           (d.status === 'hadir' ? '&#9989; Hadir' : '&#128591; Ijin') +
         '</span>' +
-        (d.status === 'hadir' ? '<span class="attendee-jumlah">' + d.jumlah + ' org</span>' : '') +
+        (d.status === 'hadir' ? '<span class="attendee-jumlah">' + (d.jumlah || 1) + ' org</span>' : '') +
       '</div>' +
     '</div>';
   }).join('');
 }
 
-// Prefill form if name already has RSVP
+/* =====================================================
+   PREFILL FORM
+   ===================================================== */
 function prefillIfExists(nama) {
   const existing = rsvpCache[nama.toLowerCase()];
-  const infoEl = document.getElementById('existingInfo');
+  const infoEl   = document.getElementById('existingInfo');
   if (existing) {
     jumlah = existing.jumlah || 1;
     document.getElementById('jumlahDisplay').textContent = jumlah;
@@ -718,7 +744,9 @@ function prefillIfExists(nama) {
   }
 }
 
-/* ---- Toast ---- */
+/* =====================================================
+   TOAST
+   ===================================================== */
 function showToast(msg, type) {
   const t = document.getElementById('toast');
   t.textContent = msg;
@@ -727,69 +755,32 @@ function showToast(msg, type) {
   t._timer = setTimeout(function() { t.className = 'toast'; }, 3000);
 }
 
-/* ---- Supabase Realtime ---- */
+/* =====================================================
+   SUPABASE REALTIME
+   ===================================================== */
 function startRealtime() {
-  const wsUrl = SB_URL.replace('https://', 'wss://') + '/realtime/v1/websocket?apikey=' + SB_KEY + '&vsn=1.0.0';
-  let ws, pingTimer, reconnectTimer;
-
-  function connect() {
-    ws = new WebSocket(wsUrl);
-
-    ws.onopen = function() {
-      console.log('[Realtime] Connected');
-      // Join channel postgres_changes untuk tabel partonggoan_rsvp
-      ws.send(JSON.stringify({
-        topic: 'realtime:public:partonggoan_rsvp',
-        event: 'phx_join',
-        payload: {
-          config: {
-            broadcast: { self: true },
-            postgres_changes: [{ event: '*', schema: 'public', table: 'partonggoan_rsvp' }]
-          }
-        },
-        ref: '1'
-      }));
-      // Heartbeat setiap 20 detik agar koneksi tetap hidup
-      pingTimer = setInterval(function() {
-        if (ws.readyState === WebSocket.OPEN) {
-          ws.send(JSON.stringify({ topic: 'phoenix', event: 'heartbeat', payload: {}, ref: null }));
-        }
-      }, 20000);
-    };
-
-    ws.onmessage = function(e) {
-      try {
-        const msg = JSON.parse(e.data);
-        const ev = msg.event;
-        // Tangkap semua perubahan tabel (INSERT, UPDATE, DELETE)
-        if (ev === 'INSERT' || ev === 'UPDATE' || ev === 'DELETE' ||
-            (msg.payload && msg.payload.data && msg.payload.data.type)) {
-          console.log('[Realtime] Change detected:', ev || msg.payload.data.type);
-          loadAttendees();
-        }
-      } catch(err) {}
-    };
-
-    ws.onclose = function() {
-      console.log('[Realtime] Disconnected, reconnect in 5s...');
-      clearInterval(pingTimer);
-      reconnectTimer = setTimeout(connect, 5000);
-    };
-
-    ws.onerror = function(err) {
-      console.error('[Realtime] Error:', err);
-      ws.close();
-    };
-  }
-
-  connect();
+  sb.channel('rsvp-live')
+    .on(
+      'postgres_changes',
+      { event: '*', schema: 'public', table: 'partonggoan_rsvp' },
+      function(payload) {
+        console.log('[Realtime] event:', payload.eventType);
+        loadAttendees();
+      }
+    )
+    .subscribe(function(status, err) {
+      console.log('[Realtime] status:', status);
+      if (err) console.error('[Realtime] error:', err);
+    });
 }
 
-/* ---- Init ---- */
+/* =====================================================
+   INIT
+   ===================================================== */
 loadMembers();
 loadAttendees();
-setInterval(loadAttendees, 30000); // fallback polling tetap ada
 startRealtime();
+setInterval(loadAttendees, 30000);
 </script>
 </body>
 </html>
