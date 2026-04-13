@@ -426,4 +426,442 @@ body {
         <div class="det-icon">&#128336;</div>
         <div>
           <div class="det-key">Jam Masuk</div>
-          <
+          <div class="det-val">13.00 WIB</div>
+        </div>
+      </div>
+      <div class="det-item" style="grid-column:1/-1;">
+        <div class="det-icon">&#128205;</div>
+        <div>
+          <div class="det-key">Lokasi</div>
+          <div class="det-val sm">Rumah St. Em. H. M. Sumbayak / br. Sinaga<br>Jl. Pembangunan 3, Medan Timur</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="verse">
+    "Sebab di mana dua atau tiga orang berkumpul dalam nama-Ku,<br>
+    di situ Aku ada di tengah-tengah mereka." &#8212; Matius 18:20
+  </div>
+
+  <div class="gorga-thin"></div>
+  <div class="gorga-bar"></div>
+</div>
+
+<!-- TOMBOL HADIR -->
+<div class="hadir-section">
+  <div class="hadir-headline">Konfirmasi Kehadiran Anda</div>
+  <div class="hadir-subline">Klik tombol di bawah untuk konfirmasi hadir atau ijin</div>
+  <div class="btn-hadir-wrap">
+    <button class="btn-hadir" id="btnHadir" onclick="toggleRsvp()">
+      <span class="icon">&#128588;</span>
+      KONFIRMASI HADIR
+    </button>
+  </div>
+  <div class="bounce-arrow" id="bounceArrow">&#9660;</div>
+</div>
+
+<!-- RSVP DROPDOWN -->
+<div class="rsvp-dropdown" id="rsvpDropdown">
+  <div class="rsvp-box">
+    <div class="rsvp-title">&#10022;&nbsp; Isi Konfirmasi &nbsp;&#10022;</div>
+
+    <div class="form-group">
+      <label class="form-label">Nama Anggota</label>
+      <div class="name-input-wrap">
+        <input type="text" class="name-input" id="namaInput"
+          placeholder="Ketik nama anggota..." autocomplete="off">
+        <div class="autocomplete-list" id="autocompleteList"></div>
+      </div>
+      <div class="existing-info" id="existingInfo" style="display:none;"></div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Jumlah yang Hadir</label>
+      <div class="jumlah-row">
+        <div class="jumlah-btn" id="btnMin">&#8722;</div>
+        <div>
+          <div class="jumlah-display" id="jumlahDisplay">1</div>
+          <div class="jumlah-label">orang</div>
+        </div>
+        <div class="jumlah-btn" id="btnPlus">&#43;</div>
+      </div>
+    </div>
+
+    <div class="action-row">
+      <button class="btn-action btn-hadir-yes" id="btnYes">&#9989; Saya Hadir</button>
+      <button class="btn-action btn-hadir-no"  id="btnNo">&#128591; Saya Ijin</button>
+    </div>
+  </div>
+</div>
+
+<!-- SHARE WA -->
+<div class="share-wa-section">
+  <div class="share-wa-label">&#128279;&nbsp; Bagikan ke anggota lain</div>
+  <button class="btn-share-wa" id="btnShareWA" onclick="shareWA()">
+    <span class="wa-icon">&#128241;</span>
+    SHARE VIA WHATSAPP
+  </button>
+</div>
+
+<!-- DAFTAR HADIR -->
+<div class="list-section">
+  <div class="gorga-thin-sep"></div>
+  <div class="list-header">
+    <div class="list-title">&#128203;&nbsp; Daftar Konfirmasi</div>
+    <div class="list-count" id="listCount">0 anggota</div>
+  </div>
+  <div class="summary-bar">
+    <div class="summary-chip chip-hadir">
+      <div class="chip-num" id="totalHadir">0</div>
+      <div class="chip-lbl">Hadir</div>
+    </div>
+    <div class="summary-chip chip-ijin">
+      <div class="chip-num" id="totalIjin">0</div>
+      <div class="chip-lbl">Ijin</div>
+    </div>
+  </div>
+  <div id="attendeeList">
+    <div class="empty-state">Belum ada konfirmasi. Jadilah yang pertama! &#127881;</div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+/* =====================================================
+   CONFIG
+   ===================================================== */
+const SB_URL = 'https://ojbpbgxyehsqbowemnyn.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9qYnBiZ3h5ZWhzcWJvd2VtbnluIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE5MDY4MTksImV4cCI6MjA4NzQ4MjgxOX0.KR_4u6Ph3aFM-ZLqRRYztVlbgKNUi7mvrMOyb7k1U_U';
+
+/* Supabase JS client */
+const sb = supabase.createClient(SB_URL, SB_KEY, {
+  realtime: { params: { eventsPerSecond: 10 } }
+});
+
+/* =====================================================
+   STATE
+   ===================================================== */
+let members = [], jumlah = 1, rsvpOpen = false;
+let rsvpCache = {};
+
+/* =====================================================
+   MEMBERS AUTOCOMPLETE
+   ===================================================== */
+async function loadMembers() {
+  try {
+    const { data, error } = await sb.from('anggota').select('nama').order('nama');
+    if (error) throw error;
+    members = Array.isArray(data) ? data.map(x => x.nama).filter(Boolean) : [];
+  } catch(e) { console.error('loadMembers:', e); }
+}
+
+const namaInput = document.getElementById('namaInput');
+const acList    = document.getElementById('autocompleteList');
+
+let _pfTimer = null;
+namaInput.addEventListener('input', function() {
+  showSuggestions();
+  clearTimeout(_pfTimer);
+  _pfTimer = setTimeout(function() {
+    const nm = namaInput.value.trim();
+    if (nm) {
+      prefillIfExists(nm);
+    } else {
+      jumlah = 1;
+      document.getElementById('jumlahDisplay').textContent = '1';
+      document.getElementById('existingInfo').style.display = 'none';
+    }
+  }, 400);
+});
+namaInput.addEventListener('focus', showSuggestions);
+
+function showSuggestions() {
+  const q = namaInput.value.toLowerCase().trim();
+  const filtered = q
+    ? members.filter(n => n.toLowerCase().includes(q)).slice(0, 8)
+    : members.slice(0, 8);
+  if (!filtered.length) { acList.classList.remove('show'); return; }
+  acList.innerHTML = filtered.map(n =>
+    '<div class="autocomplete-item">' + n + '</div>'
+  ).join('');
+  acList.classList.add('show');
+}
+
+acList.addEventListener('click', function(e) {
+  const item = e.target.closest('.autocomplete-item');
+  if (item) {
+    namaInput.value = item.textContent;
+    acList.classList.remove('show');
+    prefillIfExists(item.textContent);
+  }
+});
+
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.name-input-wrap')) acList.classList.remove('show');
+});
+
+/* =====================================================
+   JUMLAH BUTTONS
+   ===================================================== */
+document.getElementById('btnMin').addEventListener('click', function() {
+  jumlah = Math.max(1, jumlah - 1);
+  document.getElementById('jumlahDisplay').textContent = jumlah;
+});
+document.getElementById('btnPlus').addEventListener('click', function() {
+  jumlah = Math.min(20, jumlah + 1);
+  document.getElementById('jumlahDisplay').textContent = jumlah;
+});
+
+/* =====================================================
+   TOGGLE RSVP PANEL
+   ===================================================== */
+function toggleRsvp() {
+  rsvpOpen = !rsvpOpen;
+  const dd  = document.getElementById('rsvpDropdown');
+  const arr = document.getElementById('bounceArrow');
+  const btn = document.getElementById('btnHadir');
+  if (rsvpOpen) {
+    dd.classList.add('open');
+    arr.style.transform = 'rotate(180deg)';
+    btn.style.background = 'linear-gradient(135deg,#1a5e1a,#2d8b2d)';
+    btn.style.borderColor = '#4caf50';
+    btn.style.color = '#c8f7c5';
+    btn.style.animationPlayState = 'paused';
+    setTimeout(function() { dd.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 100);
+  } else {
+    dd.classList.remove('open');
+    arr.style.transform = '';
+    btn.style.cssText = '';
+  }
+}
+
+/* =====================================================
+   SUBMIT RSVP
+   ===================================================== */
+async function submitRsvp(status) {
+  const nama = namaInput.value.trim();
+  if (!nama) { showToast('Nama harus diisi!', 'err'); return; }
+
+  /* Kalau ijin, jumlah tidak relevan → paksa 1 */
+  const jmlFinal = status === 'hadir' ? jumlah : 1;
+  const btnYes = document.getElementById('btnYes');
+  const btnNo  = document.getElementById('btnNo');
+  btnYes.disabled = true;
+  btnNo.disabled  = true;
+  const activeBtn = status === 'hadir' ? btnYes : btnNo;
+  activeBtn.textContent = 'Menyimpan...';
+
+  try {
+    /* Cek apakah nama sudah ada (case-insensitive) */
+    const { data: existing, error: checkErr } = await sb
+      .from('partonggoan_rsvp')
+      .select('id, status, jumlah')
+      .ilike('nama', nama)
+      .limit(1);
+
+    if (checkErr) throw checkErr;
+
+    let saveErr, isUpdate = false;
+
+    if (existing && existing.length > 0) {
+      /* UPDATE — tidak akan double data */
+      isUpdate = true;
+      const { error } = await sb
+        .from('partonggoan_rsvp')
+        .update({ jumlah: jmlFinal, status: status })
+        .eq('id', existing[0].id);
+      saveErr = error;
+    } else {
+      /* INSERT — data baru */
+      const { error } = await sb
+        .from('partonggoan_rsvp')
+        .insert({ nama: nama, jumlah: jmlFinal, status: status });
+      saveErr = error;
+    }
+
+    if (saveErr) throw saveErr;
+
+    const isHadir = status === 'hadir';
+    const msg = isUpdate
+      ? (isHadir ? 'Data diperbarui! Sampai jumpa \uD83C\uDF89' : 'Data diperbarui! Ijin dicatat \uD83D\uDE4F')
+      : (isHadir ? 'Terima kasih! Sampai jumpa! \uD83C\uDF89' : 'Baik, ijin dicatat! \uD83D\uDE4F');
+    showToast(msg, 'ok');
+    sendWA(nama, jmlFinal, status, isUpdate);
+
+    namaInput.value = '';
+    jumlah = 1;
+    document.getElementById('jumlahDisplay').textContent = '1';
+    document.getElementById('existingInfo').style.display = 'none';
+    toggleRsvp();
+
+    /* Realtime akan auto-refresh, ini hanya safety fallback */
+    setTimeout(loadAttendees, 600);
+
+  } catch(e) {
+    console.error('submitRsvp error:', e);
+    showToast('Gagal menyimpan. Coba lagi.', 'err');
+  } finally {
+    btnYes.disabled = false;
+    btnNo.disabled  = false;
+    btnYes.innerHTML = '&#9989; Saya Hadir';
+    btnNo.innerHTML  = '&#128591; Saya Ijin';
+  }
+}
+
+document.getElementById('btnYes').addEventListener('click', function() { submitRsvp('hadir'); });
+document.getElementById('btnNo').addEventListener('click',  function() { submitRsvp('ijin');  });
+
+/* =====================================================
+   SHARE WHATSAPP
+   ===================================================== */
+function shareWA() {
+  /* Gunakan URL halaman saat ini sebagai link absen */
+  var pageUrl = window.location.href;
+  /* Kalau diakses lewat file://, ganti dengan placeholder agar tetap berguna */
+  if (pageUrl.startsWith('file://')) {
+    pageUrl = '[Link halaman absen diganti dengan URL hosting Anda]';
+  }
+
+  var msg =
+    '\uD83D\uDD14 *PENGINGAT PARTONGGOAN* \uD83D\uDD14\n' +
+    '\uD83C\uDFEB *Tumpuan Sumbayak Boru Pakon Panogolan*\n' +
+    '_Kota Medan \u00B7 Rayon Medan Timur_\n\n' +
+    '\uD83D\uDCC5 *Hari/Tanggal:* Minggu, 19 April 2026\n' +
+    '\u23F0 *Jam Masuk:* 13.00 WIB\n' +
+    '\uD83D\uDCCD *Lokasi:* Rumah St. Em. H. M. Sumbayak / br. Sinaga\n' +
+    '   Jl. Pembangunan 3, Medan Timur\n\n' +
+    '\uD83D\uDCCB *Konfirmasi kehadiran Anda di sini:*\n' +
+    '\uD83D\uDD17 ' + pageUrl + '\n\n' +
+    '_Harap konfirmasi hadir atau ijin melalui link di atas. Terima kasih!_ \uD83D\uDE4F';
+
+  window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
+}
+
+/* =====================================================
+   WHATSAPP
+   ===================================================== */
+function sendWA(nama, jumlah, status, isUpdate) {
+  const stTxt = status === 'hadir'
+    ? '\u2705 *HADIR* (' + jumlah + ' orang)'
+    : '\uD83D\uDE4F *IJIN* Tidak Hadir';
+  const prefix = isUpdate ? '\uD83D\uDD04 *Perubahan Konfirmasi*' : '\uD83D\uDD14 *Konfirmasi Kehadiran*';
+  const msg = prefix + '\n\n' +
+    '\uD83D\uDC64 Nama: *' + nama + '*\n' +
+    'Status: ' + stTxt + '\n\n' +
+    '_Via Flyer Digital TSBP Medan Timur_';
+  window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
+}
+
+/* =====================================================
+   LOAD & RENDER ATTENDEES
+   ===================================================== */
+async function loadAttendees() {
+  try {
+    const { data, error } = await sb
+      .from('partonggoan_rsvp')
+      .select('*')
+      .order('created_at', { ascending: false });
+    if (error) throw error;
+    renderList(data || []);
+  } catch(e) { console.error('loadAttendees:', e); }
+}
+
+function renderList(data) {
+  const listEl  = document.getElementById('attendeeList');
+  const countEl = document.getElementById('listCount');
+  const hadirEl = document.getElementById('totalHadir');
+  const ijinEl  = document.getElementById('totalIjin');
+
+  rsvpCache = {};
+  data.forEach(function(d) { rsvpCache[d.nama.toLowerCase()] = d; });
+
+  const hadir    = data.filter(function(d) { return d.status === 'hadir'; });
+  const ijin     = data.filter(function(d) { return d.status === 'ijin'; });
+  const totalOrg = hadir.reduce(function(s, d) { return s + (d.jumlah || 1); }, 0);
+
+  countEl.textContent = data.length + ' anggota';
+  hadirEl.textContent = hadir.length + ' (' + totalOrg + ' org)';
+  ijinEl.textContent  = ijin.length;
+
+  if (!data.length) {
+    listEl.innerHTML = '<div class="empty-state">Belum ada konfirmasi. Jadilah yang pertama! &#127881;</div>';
+    return;
+  }
+
+  listEl.innerHTML = data.map(function(d) {
+    return '<div class="attendee-card">' +
+      '<div class="attendee-name">' + d.nama + '</div>' +
+      '<div class="attendee-right">' +
+        '<span class="status-badge ' + (d.status === 'hadir' ? 'badge-hadir' : 'badge-ijin') + '">' +
+          (d.status === 'hadir' ? '&#9989; Hadir' : '&#128591; Ijin') +
+        '</span>' +
+        (d.status === 'hadir' ? '<span class="attendee-jumlah">' + (d.jumlah || 1) + ' org</span>' : '') +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+/* =====================================================
+   PREFILL FORM
+   ===================================================== */
+function prefillIfExists(nama) {
+  const existing = rsvpCache[nama.toLowerCase()];
+  const infoEl   = document.getElementById('existingInfo');
+  if (existing) {
+    jumlah = existing.jumlah || 1;
+    document.getElementById('jumlahDisplay').textContent = jumlah;
+    const stLabel = existing.status === 'hadir'
+      ? '&#9989; Hadir (' + jumlah + ' orang)'
+      : '&#128591; Ijin Tidak Hadir';
+    infoEl.innerHTML = '&#9888;&#65039; Sudah konfirmasi: <strong>' + stLabel + '</strong> &mdash; Ubah jika ada perubahan';
+    infoEl.style.display = 'block';
+  } else {
+    jumlah = 1;
+    document.getElementById('jumlahDisplay').textContent = '1';
+    infoEl.style.display = 'none';
+  }
+}
+
+/* =====================================================
+   TOAST
+   ===================================================== */
+function showToast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show ' + (type || 'ok');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(function() { t.className = 'toast'; }, 3000);
+}
+
+/* =====================================================
+   SUPABASE REALTIME
+   ===================================================== */
+function startRealtime() {
+  sb.channel('rsvp-live')
+    .on(
+      'postgres_changes',
+      { event: '*', schema: 'public', table: 'partonggoan_rsvp' },
+      function(payload) {
+        console.log('[Realtime] event:', payload.eventType);
+        loadAttendees();
+      }
+    )
+    .subscribe(function(status, err) {
+      console.log('[Realtime] status:', status);
+      if (err) console.error('[Realtime] error:', err);
+    });
+}
+
+/* =====================================================
+   INIT
+   ===================================================== */
+loadMembers();
+loadAttendees();
+startRealtime();
+setInterval(loadAttendees, 30000);
+</script>
+</body>
+</html>
