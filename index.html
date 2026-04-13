@@ -461,6 +461,15 @@ body {
   <div class="bounce-arrow" id="bounceArrow">&#9660;</div>
 </div>
 
+<!-- SHARE WA -->
+<div class="share-wa-section">
+  <div class="share-wa-label">&#128203;&nbsp; Bagikan rekap kehadiran ke grup</div>
+  <button class="btn-share-wa" id="btnShareWA" onclick="shareWA()">
+    <span class="wa-icon">&#128241;</span>
+    SHARE REKAP VIA WHATSAPP
+  </button>
+</div>
+
 <!-- RSVP DROPDOWN -->
 <div class="rsvp-dropdown" id="rsvpDropdown">
   <div class="rsvp-box">
@@ -493,15 +502,6 @@ body {
       <button class="btn-action btn-hadir-no"  id="btnNo">&#128591; Saya Ijin</button>
     </div>
   </div>
-</div>
-
-<!-- SHARE WA -->
-<div class="share-wa-section">
-  <div class="share-wa-label">&#128279;&nbsp; Bagikan ke anggota lain</div>
-  <button class="btn-share-wa" id="btnShareWA" onclick="shareWA()">
-    <span class="wa-icon">&#128241;</span>
-    SHARE VIA WHATSAPP
-  </button>
 </div>
 
 <!-- DAFTAR HADIR -->
@@ -715,44 +715,79 @@ document.getElementById('btnYes').addEventListener('click', function() { submitR
 document.getElementById('btnNo').addEventListener('click',  function() { submitRsvp('ijin');  });
 
 /* =====================================================
-   SHARE WHATSAPP
+   BUILD REKAP TEXT (dipakai oleh shareWA & sendWA)
    ===================================================== */
-function shareWA() {
-  /* Gunakan URL halaman saat ini sebagai link absen */
-  var pageUrl = window.location.href;
-  /* Kalau diakses lewat file://, ganti dengan placeholder agar tetap berguna */
-  if (pageUrl.startsWith('file://')) {
-    pageUrl = '[Link halaman absen diganti dengan URL hosting Anda]';
+function getPageUrl() {
+  var url = window.location.href;
+  return url.startsWith('file://') ? '[URL halaman absen]' : url;
+}
+
+function buildRekapText() {
+  var data = Object.values(rsvpCache);
+  var hadir = data.filter(function(d) { return d.status === 'hadir'; });
+  var ijin  = data.filter(function(d) { return d.status === 'ijin';  });
+  var totalOrg = hadir.reduce(function(s, d) { return s + (d.jumlah || 1); }, 0);
+
+  var txt =
+    '\uD83D\uDD14 *REKAP KONFIRMASI PARTONGGOAN* \uD83D\uDD14\n' +
+    '*Tumpuan Sumbayak Boru Pakon Panogolan*\n' +
+    '_Kota Medan \u00B7 Rayon Medan Timur_\n' +
+    '\u2015\u2015\u2015\u2015\u2015\u2015\u2015\u2015\u2015\u2015\u2015\u2015\u2015\u2015\n' +
+    '\uD83D\uDCC5 *Minggu, 19 April 2026* \u2022 13.00 WIB\n' +
+    '\uD83D\uDCCD Jl. Pembangunan 3, Medan Timur\n' +
+    '\u2015\u2015\u2015\u2015\u2015\u2015\u2015\u2015\u2015\u2015\u2015\u2015\u2015\u2015\n\n' +
+    '\u2705 *HADIR: ' + hadir.length + ' keluarga (' + totalOrg + ' orang)*\n';
+
+  if (hadir.length) {
+    hadir.forEach(function(d, i) {
+      txt += (i + 1) + '. ' + d.nama + ' (' + (d.jumlah || 1) + ' org)\n';
+    });
+  } else {
+    txt += '_Belum ada_\n';
   }
 
-  var msg =
-    '\uD83D\uDD14 *PENGINGAT PARTONGGOAN* \uD83D\uDD14\n' +
-    '\uD83C\uDFEB *Tumpuan Sumbayak Boru Pakon Panogolan*\n' +
-    '_Kota Medan \u00B7 Rayon Medan Timur_\n\n' +
-    '\uD83D\uDCC5 *Hari/Tanggal:* Minggu, 19 April 2026\n' +
-    '\u23F0 *Jam Masuk:* 13.00 WIB\n' +
-    '\uD83D\uDCCD *Lokasi:* Rumah St. Em. H. M. Sumbayak / br. Sinaga\n' +
-    '   Jl. Pembangunan 3, Medan Timur\n\n' +
-    '\uD83D\uDCCB *Konfirmasi kehadiran Anda di sini:*\n' +
-    '\uD83D\uDD17 ' + pageUrl + '\n\n' +
-    '_Harap konfirmasi hadir atau ijin melalui link di atas. Terima kasih!_ \uD83D\uDE4F';
+  txt += '\n\uD83D\uDE4F *IJIN: ' + ijin.length + ' keluarga*\n';
+  if (ijin.length) {
+    ijin.forEach(function(d, i) {
+      txt += (i + 1) + '. ' + d.nama + '\n';
+    });
+  } else {
+    txt += '_Belum ada_\n';
+  }
 
-  window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
+  txt +=
+    '\n\u2015\u2015\u2015\u2015\u2015\u2015\u2015\u2015\u2015\u2015\u2015\u2015\u2015\u2015\n' +
+    '_Via Flyer Digital TSBP Medan Timur_\n' +
+    '\uD83D\uDD17 *Link Absen Online:*\n' +
+    getPageUrl();
+
+  return txt;
 }
 
 /* =====================================================
-   WHATSAPP
+   SHARE REKAP WHATSAPP (tombol manual)
+   ===================================================== */
+function shareWA() {
+  window.open('https://wa.me/?text=' + encodeURIComponent(buildRekapText()), '_blank');
+}
+
+/* =====================================================
+   WHATSAPP — setelah submit absen: konfirmasi + rekap
    ===================================================== */
 function sendWA(nama, jumlah, status, isUpdate) {
   const stTxt = status === 'hadir'
     ? '\u2705 *HADIR* (' + jumlah + ' orang)'
     : '\uD83D\uDE4F *IJIN* Tidak Hadir';
-  const prefix = isUpdate ? '\uD83D\uDD04 *Perubahan Konfirmasi*' : '\uD83D\uDD14 *Konfirmasi Kehadiran*';
-  const msg = prefix + '\n\n' +
-    '\uD83D\uDC64 Nama: *' + nama + '*\n' +
-    'Status: ' + stTxt + '\n\n' +
-    '_Via Flyer Digital TSBP Medan Timur_';
-  window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
+  const prefix = isUpdate ? '\uD83D\uDD04 *Perubahan Konfirmasi*' : '\uD83C\uDF89 *Konfirmasi Baru*';
+
+  /* Tunggu sebentar agar rsvpCache sudah ter-update loadAttendees */
+  setTimeout(function() {
+    const msg =
+      prefix + '\n' +
+      '\uD83D\uDC64 *' + nama + '*  \u2192  ' + stTxt + '\n\n' +
+      buildRekapText();
+    window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
+  }, 700);
 }
 
 /* =====================================================
