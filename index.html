@@ -727,10 +727,69 @@ function showToast(msg, type) {
   t._timer = setTimeout(function() { t.className = 'toast'; }, 3000);
 }
 
+/* ---- Supabase Realtime ---- */
+function startRealtime() {
+  const wsUrl = SB_URL.replace('https://', 'wss://') + '/realtime/v1/websocket?apikey=' + SB_KEY + '&vsn=1.0.0';
+  let ws, pingTimer, reconnectTimer;
+
+  function connect() {
+    ws = new WebSocket(wsUrl);
+
+    ws.onopen = function() {
+      console.log('[Realtime] Connected');
+      // Join channel postgres_changes untuk tabel partonggoan_rsvp
+      ws.send(JSON.stringify({
+        topic: 'realtime:public:partonggoan_rsvp',
+        event: 'phx_join',
+        payload: {
+          config: {
+            broadcast: { self: true },
+            postgres_changes: [{ event: '*', schema: 'public', table: 'partonggoan_rsvp' }]
+          }
+        },
+        ref: '1'
+      }));
+      // Heartbeat setiap 20 detik agar koneksi tetap hidup
+      pingTimer = setInterval(function() {
+        if (ws.readyState === WebSocket.OPEN) {
+          ws.send(JSON.stringify({ topic: 'phoenix', event: 'heartbeat', payload: {}, ref: null }));
+        }
+      }, 20000);
+    };
+
+    ws.onmessage = function(e) {
+      try {
+        const msg = JSON.parse(e.data);
+        const ev = msg.event;
+        // Tangkap semua perubahan tabel (INSERT, UPDATE, DELETE)
+        if (ev === 'INSERT' || ev === 'UPDATE' || ev === 'DELETE' ||
+            (msg.payload && msg.payload.data && msg.payload.data.type)) {
+          console.log('[Realtime] Change detected:', ev || msg.payload.data.type);
+          loadAttendees();
+        }
+      } catch(err) {}
+    };
+
+    ws.onclose = function() {
+      console.log('[Realtime] Disconnected, reconnect in 5s...');
+      clearInterval(pingTimer);
+      reconnectTimer = setTimeout(connect, 5000);
+    };
+
+    ws.onerror = function(err) {
+      console.error('[Realtime] Error:', err);
+      ws.close();
+    };
+  }
+
+  connect();
+}
+
 /* ---- Init ---- */
 loadMembers();
 loadAttendees();
-setInterval(loadAttendees, 30000);
+setInterval(loadAttendees, 30000); // fallback polling tetap ada
+startRealtime();
 </script>
 </body>
 </html>
