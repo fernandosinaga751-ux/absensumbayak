@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Panel Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --gold:#f0c040; --gold2:#c9860a;
+  --red:#8b1a05; --dark:#1e0a04; --cream:rgba(212,149,106,0.85);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{
+  background:#0d0502; font-family:'Lato',sans-serif;
+  min-height:100vh; display:flex; flex-direction:column; align-items:center;
+  padding-bottom:40px;
+}
+/* ===== LOGIN ===== */
+#loginScreen{
+  display:flex; flex-direction:column; align-items:center;
+  justify-content:center; min-height:100vh; width:100%; padding:24px;
+}
+.login-box{
+  background:linear-gradient(180deg,#1e0a04,#2a0e06);
+  border:1px solid rgba(240,192,64,0.4);
+  border-radius:16px; padding:36px 28px; width:100%; max-width:360px;
+  box-shadow:0 8px 40px rgba(0,0,0,0.6);
+}
+.login-icon{font-size:40px;text-align:center;margin-bottom:10px;}
+.login-title{
+  font-family:'Playfair Display',serif; font-size:20px;
+  color:var(--gold); text-align:center; margin-bottom:4px;
+}
+.login-sub{font-size:12px;color:var(--cream);text-align:center;margin-bottom:28px;}
+.inp-wrap{position:relative;margin-bottom:16px;}
+.inp-wrap input{
+  width:100%; padding:13px 44px 13px 16px;
+  background:rgba(255,255,255,0.05); border:1px solid rgba(240,192,64,0.3);
+  border-radius:10px; color:#fff; font-size:15px; outline:none;
+  font-family:'Lato',sans-serif; letter-spacing:3px;
+}
+.inp-wrap input::placeholder{letter-spacing:0;color:rgba(255,255,255,0.3);}
+.inp-wrap input:focus{border-color:var(--gold);}
+.eye-btn{
+  position:absolute;right:12px;top:50%;transform:translateY(-50%);
+  background:none;border:none;color:var(--cream);cursor:pointer;font-size:18px;
+}
+.btn-login{
+  width:100%; padding:14px; margin-top:4px;
+  background:linear-gradient(135deg,var(--red),#c9400a);
+  border:none; border-radius:10px; color:#fff;
+  font-family:'Lato',sans-serif; font-size:15px; font-weight:700;
+  cursor:pointer; letter-spacing:1px;
+  transition:opacity .2s;
+}
+.btn-login:active{opacity:.8;}
+.login-err{
+  display:none; margin-top:12px; padding:10px 14px;
+  background:rgba(244,67,54,0.15); border:1px solid rgba(244,67,54,0.4);
+  border-radius:8px; color:#f44336; font-size:13px; text-align:center;
+}
+/* ===== ADMIN PANEL ===== */
+#adminPanel{display:none;width:100%;max-width:540px;padding:0 12px;}
+.gorga-bar{
+  width:100%;height:14px;
+  background:repeating-linear-gradient(90deg,
+    #8b1a05 0,#8b1a05 8px,#c9860a 8px,#c9860a 16px,
+    #f0c040 16px,#f0c040 20px,#c9860a 20px,#c9860a 28px,
+    #8b1a05 28px,#8b1a05 36px,#f0c040 36px,#f0c040 40px);
+}
+.gorga-thin{
+  width:100%;height:4px;
+  background:linear-gradient(90deg,#8b1a05,#f0c040 30%,#c9860a 50%,#f0c040 70%,#8b1a05);
+}
+.panel-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px 0 10px;
+}
+.panel-title{
+  font-family:'Playfair Display',serif;font-size:18px;color:var(--gold);
+}
+.btn-logout{
+  padding:6px 14px;background:rgba(139,26,5,0.4);
+  border:1px solid rgba(139,26,5,0.7);border-radius:20px;
+  color:var(--cream);font-size:12px;cursor:pointer;font-family:'Lato',sans-serif;
+}
+.stat-row{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;
+}
+.stat-card{
+  background:linear-gradient(180deg,#1e0a04,#2a0e06);
+  border:1px solid rgba(240,192,64,0.25);border-radius:12px;
+  padding:14px 10px;text-align:center;
+}
+.stat-num{font-family:'Playfair Display',serif;font-size:26px;color:#fff;font-weight:700;}
+.stat-lbl{font-size:11px;color:var(--cream);margin-top:2px;}
+.stat-num.green{color:#4caf50;}
+.stat-num.amber{color:#ff9800;}
+.section-label{
+  font-size:11px;font-weight:700;color:var(--gold2);
+  letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;
+}
+/* Search */
+.search-wrap{position:relative;margin-bottom:14px;}
+.search-wrap input{
+  width:100%;padding:11px 16px 11px 38px;
+  background:rgba(255,255,255,0.05);border:1px solid rgba(240,192,64,0.25);
+  border-radius:10px;color:#fff;font-size:14px;outline:none;
+  font-family:'Lato',sans-serif;
+}
+.search-wrap input:focus{border-color:var(--gold);}
+.search-wrap input::placeholder{color:rgba(255,255,255,0.3);}
+.search-icon{
+  position:absolute;left:12px;top:50%;transform:translateY(-50%);
+  color:var(--cream);font-size:16px;pointer-events:none;
+}
+/* Action bar */
+.action-bar{
+  display:flex;gap:8px;margin-bottom:14px;align-items:center;
+}
+.btn-del-all{
+  flex:1;padding:10px;
+  background:rgba(244,67,54,0.15);border:1px solid rgba(244,67,54,0.5);
+  border-radius:10px;color:#f44336;font-size:13px;font-weight:700;
+  cursor:pointer;font-family:'Lato',sans-serif;
+}
+.btn-del-all:active{background:rgba(244,67,54,0.3);}
+.btn-refresh{
+  padding:10px 14px;background:rgba(240,192,64,0.1);
+  border:1px solid rgba(240,192,64,0.3);border-radius:10px;
+  color:var(--gold);font-size:16px;cursor:pointer;
+}
+/* Table */
+.rsvp-table{width:100%;border-collapse:collapse;margin-bottom:16px;}
+.rsvp-table thead th{
+  font-size:11px;font-weight:700;color:var(--gold2);
+  letter-spacing:1px;text-transform:uppercase;
+  padding:8px 10px;border-bottom:1px solid rgba(240,192,64,0.2);
+  text-align:left;
+}
+.rsvp-table tbody tr{
+  border-bottom:1px solid rgba(255,255,255,0.04);
+  transition:background .15s;
+}
+.rsvp-table tbody tr:hover{background:rgba(240,192,64,0.04);}
+.rsvp-table td{
+  padding:11px 10px;font-size:14px;color:#fff;vertical-align:middle;
+}
+.rsvp-table td.td-nama{font-weight:700;max-width:160px;word-break:break-word;}
+.badge{
+  display:inline-block;padding:3px 10px;border-radius:20px;
+  font-size:11px;font-weight:700;
+}
+.badge-hadir{background:rgba(76,175,80,0.15);color:#4caf50;border:1px solid rgba(76,175,80,0.3);}
+.badge-ijin{background:rgba(244,67,54,0.1);color:#ef9a9a;border:1px solid rgba(244,67,54,0.2);}
+.td-jml{color:var(--gold);font-weight:700;font-size:15px;text-align:center;}
+.btn-del-row{
+  padding:5px 10px;background:rgba(244,67,54,0.12);
+  border:1px solid rgba(244,67,54,0.35);border-radius:7px;
+  color:#f44336;font-size:12px;cursor:pointer;font-family:'Lato',sans-serif;
+  white-space:nowrap;
+}
+.btn-del-row:active{background:rgba(244,67,54,0.3);}
+.empty-state{
+  padding:32px;text-align:center;
+  color:var(--cream);font-size:14px;
+}
+/* Modal konfirmasi */
+#modal{
+  display:none;position:fixed;inset:0;
+  background:rgba(0,0,0,0.75);z-index:999;
+  align-items:center;justify-content:center;padding:24px;
+}
+#modal.show{display:flex;}
+.modal-box{
+  background:linear-gradient(180deg,#1e0a04,#2a0e06);
+  border:1px solid rgba(240,192,64,0.4);border-radius:16px;
+  padding:28px 22px;width:100%;max-width:320px;
+  box-shadow:0 8px 40px rgba(0,0,0,0.8);
+}
+.modal-icon{font-size:36px;text-align:center;margin-bottom:10px;}
+.modal-title{
+  font-family:'Playfair Display',serif;font-size:17px;
+  color:var(--gold);text-align:center;margin-bottom:8px;
+}
+.modal-msg{font-size:13px;color:var(--cream);text-align:center;margin-bottom:22px;line-height:1.6;}
+.modal-msg strong{color:#fff;}
+.modal-btns{display:flex;gap:10px;}
+.btn-cancel{
+  flex:1;padding:12px;background:rgba(255,255,255,0.07);
+  border:1px solid rgba(255,255,255,0.2);border-radius:10px;
+  color:#fff;font-size:14px;cursor:pointer;font-family:'Lato',sans-serif;
+}
+.btn-confirm-del{
+  flex:1;padding:12px;background:rgba(244,67,54,0.2);
+  border:1px solid rgba(244,67,54,0.5);border-radius:10px;
+  color:#f44336;font-size:14px;font-weight:700;cursor:pointer;
+  font-family:'Lato',sans-serif;
+}
+.btn-confirm-del:active{background:rgba(244,67,54,0.4);}
+/* Toast */
+.toast{
+  position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);
+  background:#333;color:#fff;padding:10px 22px;border-radius:30px;
+  font-size:13px;opacity:0;transition:all .3s;pointer-events:none;
+  white-space:nowrap;z-index:1000;
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+.toast.ok{background:#2e7d32;}
+.toast.err{background:#c62828;}
+/* Skeleton loading */
+.skel{
+  background:linear-gradient(90deg,rgba(255,255,255,0.04) 25%,rgba(255,255,255,0.08) 50%,rgba(255,255,255,0.04) 75%);
+  background-size:200% 100%;animation:shimmer 1.4s infinite;
+  border-radius:6px;
+}
+@keyframes shimmer{0%{background-position:200% 0;}100%{background-position:-200% 0;}}
+</style>
+</head>
+<body>
+
+<!-- ===== LOGIN SCREEN ===== -->
+<div id="loginScreen">
+  <div class="login-box">
+    <div class="login-icon">🔐</div>
+    <div class="login-title">Panel Admin</div>
+    <div class="login-sub">Partonggoan Tumpuan Sumbayak 2026</div>
+    <div class="inp-wrap">
+      <input type="password" id="pwdInput" placeholder="Masukkan password admin" autocomplete="off">
+      <button class="eye-btn" id="eyeBtn" type="button">👁</button>
+    </div>
+    <button class="btn-login" id="btnLogin">Masuk</button>
+    <div class="login-err" id="loginErr">Password salah. Coba lagi.</div>
+  </div>
+</div>
+
+<!-- ===== ADMIN PANEL ===== -->
+<div id="adminPanel">
+  <div class="gorga-bar"></div>
+  <div class="gorga-thin"></div>
+
+  <div class="panel-header">
+    <div class="panel-title">⚙️ Admin Panel</div>
+    <button class="btn-logout" id="btnLogout">Keluar</button>
+  </div>
+
+  <div class="stat-row">
+    <div class="stat-card">
+      <div class="stat-num" id="sTotal">-</div>
+      <div class="stat-lbl">Total</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num green" id="sHadir">-</div>
+      <div class="stat-lbl">Hadir</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num amber" id="sOrg">-</div>
+      <div class="stat-lbl">Org Hadir</div>
+    </div>
+  </div>
+
+  <div class="gorga-thin" style="margin-bottom:16px;"></div>
+
+  <div class="section-label">📋 Daftar Konfirmasi</div>
+
+  <div class="search-wrap">
+    <span class="search-icon">🔍</span>
+    <input type="text" id="searchInput" placeholder="Cari nama...">
+  </div>
+
+  <div class="action-bar">
+    <button class="btn-del-all" id="btnDelAll">🗑 Hapus Semua Data</button>
+    <button class="btn-refresh" id="btnRefresh">🔄</button>
+  </div>
+
+  <div id="tableWrap">
+    <div class="empty-state" style="padding:20px;">Memuat data...</div>
+  </div>
+</div>
+
+<!-- Modal konfirmasi hapus -->
+<div id="modal">
+  <div class="modal-box">
+    <div class="modal-icon" id="modalIcon">🗑️</div>
+    <div class="modal-title" id="modalTitle">Hapus Data</div>
+    <div class="modal-msg" id="modalMsg">Yakin ingin menghapus?</div>
+    <div class="modal-btns">
+      <button class="btn-cancel" id="btnCancel">Batal</button>
+      <button class="btn-confirm-del" id="btnConfirmDel">Hapus</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+/* ============================================================
+   CONFIG — variabel internal, tidak expose sebagai global jelas
+   ============================================================ */
+const _c = (function() {
+  return {
+    u: 'https://ojbpbgxyehsqbowemnyn.supabase.co',
+    k: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9qYnBiZ3h5ZWhzcWJvd2VtbnluIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE5MDY4MTksImV4cCI6MjA4NzQ4MjgxOX0.KR_4u6Ph3aFM-ZLqRRYztVlbgKNUi7mvrMOyb7k1U_U',
+    /* SHA-256 dari password "tsbpAdmin"
+       Ganti password: hitung di https://emn178.github.io/online-tools/sha256.html */
+    p: 'b3207e909ba77fdf16c8f1c4759ad279768faa468ff0b2c976da441d8e09279d'
+  };
+})();
+
+/* Supabase client — dibuat hanya setelah login */
+let _sb = null;
+function getSb() {
+  if (!_sb) _sb = supabase.createClient(_c.u, _c.k);
+  return _sb;
+}
+
+/* ============================================================
+   HASH PASSWORD (Web Crypto API — native, no library)
+   ============================================================ */
+async function sha256(str) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+/* ============================================================
+   SESSION
+   ============================================================ */
+const SK = '_adm_s';
+function isLoggedIn()  { return sessionStorage.getItem(SK) === '1'; }
+function setSession()  { sessionStorage.setItem(SK, '1'); }
+function clearSession(){ sessionStorage.removeItem(SK); }
+
+/* ============================================================
+   LOGIN
+   ============================================================ */
+document.getElementById('eyeBtn').addEventListener('click', function() {
+  const inp = document.getElementById('pwdInput');
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+});
+
+document.getElementById('pwdInput').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') doLogin();
+});
+
+document.getElementById('btnLogin').addEventListener('click', doLogin);
+
+async function doLogin() {
+  const val = document.getElementById('pwdInput').value;
+  if (!val) return;
+  const hash = await sha256(val);
+  if (hash === _c.p) {
+    setSession();
+    showPanel();
+  } else {
+    document.getElementById('loginErr').style.display = 'block';
+    document.getElementById('pwdInput').value = '';
+  }
+}
+
+/* ============================================================
+   PANEL
+   ============================================================ */
+function showPanel() {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('adminPanel').style.display = 'block';
+  loadData();
+  startRealtime();
+}
+
+/* ============================================================
+   DATA
+   ============================================================ */
+let allData = [];
+
+async function loadData() {
+  try {
+    const { data, error } = await getSb()
+      .from('partonggoan_rsvp')
+      .select('*')
+      .order('created_at', { ascending: true });
+    if (error) throw error;
+    allData = data || [];
+    renderStats(allData);
+    renderTable(allData);
+  } catch(e) { console.error('loadData:', e); }
+}
+
+function renderStats(data) {
+  const hadir    = data.filter(d => d.status === 'hadir');
+  const totalOrg = hadir.reduce((s, d) => s + (d.jumlah || 1), 0);
+  document.getElementById('sTotal').textContent = data.length;
+  document.getElementById('sHadir').textContent = hadir.length;
+  document.getElementById('sOrg').textContent   = totalOrg;
+}
+
+function renderTable(data) {
+  const q = document.getElementById('searchInput').value.toLowerCase().trim();
+  const filtered = q ? data.filter(d => d.nama && d.nama.toLowerCase().includes(q)) : data;
+  const wrap = document.getElementById('tableWrap');
+
+  if (!filtered.length) {
+    wrap.innerHTML = '<div class="empty-state">' +
+      (q ? '&#128269; Tidak ditemukan nama "' + escHtml(q) + '"' : '&#128235; Belum ada data konfirmasi') +
+    '</div>';
+    return;
+  }
+
+  let html = '<table class="rsvp-table"><thead><tr>' +
+    '<th>#</th><th>Nama</th><th>Status</th>' +
+    '<th style="text-align:center">Org</th><th></th>' +
+    '</tr></thead><tbody>';
+
+  filtered.forEach(function(d, i) {
+    html += '<tr>' +
+      '<td style="color:var(--cream);font-size:12px;">' + (i + 1) + '</td>' +
+      '<td class="td-nama">' + escHtml(d.nama) + '</td>' +
+      '<td><span class="badge ' + (d.status === 'hadir' ? 'badge-hadir' : 'badge-ijin') + '">' +
+        (d.status === 'hadir' ? '&#9989; Hadir' : '&#128591; Ijin') +
+      '</span></td>' +
+      '<td class="td-jml">' + (d.status === 'hadir' ? (d.jumlah || 1) : '-') + '</td>' +
+      '<td><button class="btn-del-row" data-id="' + d.id + '" data-nama="' + escHtml(d.nama) + '">Hapus</button></td>' +
+    '</tr>';
+  });
+
+  html += '</tbody></table>';
+  wrap.innerHTML = html;
+
+  wrap.querySelectorAll('.btn-del-row').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      confirmDelete(this.dataset.id, this.dataset.nama);
+    });
+  });
+}
+
+function escHtml(s) {
+  return String(s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+document.getElementById('searchInput').addEventListener('input', function() {
+  renderTable(allData);
+});
+
+document.getElementById('btnRefresh').addEventListener('click', function() {
+  loadData();
+  showToast('Data diperbarui', 'ok');
+});
+
+/* ============================================================
+   DELETE SATU
+   ============================================================ */
+let pendingDeleteId   = null;
+let pendingDeleteAll  = false;
+
+function confirmDelete(id, nama) {
+  pendingDeleteId  = id;
+  pendingDeleteAll = false;
+  document.getElementById('modalIcon').textContent  = '&#128465;&#65039;';
+  document.getElementById('modalTitle').textContent = 'Hapus Data';
+  document.getElementById('modalMsg').innerHTML =
+    'Yakin ingin menghapus konfirmasi dari:<br><strong>' + escHtml(nama) + '</strong>?';
+  document.getElementById('modal').classList.add('show');
+}
+
+/* ============================================================
+   DELETE SEMUA
+   ============================================================ */
+document.getElementById('btnDelAll').addEventListener('click', function() {
+  if (!allData.length) { showToast('Tidak ada data untuk dihapus', 'err'); return; }
+  pendingDeleteAll = true;
+  pendingDeleteId  = null;
+  document.getElementById('modalIcon').textContent  = '&#9888;&#65039;';
+  document.getElementById('modalTitle').textContent = 'Hapus Semua?';
+  document.getElementById('modalMsg').innerHTML =
+    'Ini akan menghapus <strong>' + allData.length + ' data</strong> konfirmasi secara permanen.<br><br>' +
+    'Tindakan ini <strong>tidak bisa dibatalkan</strong>.';
+  document.getElementById('modal').classList.add('show');
+});
+
+/* ============================================================
+   MODAL ACTIONS
+   ============================================================ */
+document.getElementById('btnCancel').addEventListener('click', closeModal);
+
+document.getElementById('btnConfirmDel').addEventListener('click', async function() {
+  this.textContent = 'Menghapus...';
+  this.disabled = true;
+  try {
+    if (pendingDeleteAll)        await deleteAll();
+    else if (pendingDeleteId)    await deleteOne(pendingDeleteId);
+  } finally {
+    this.textContent = 'Hapus';
+    this.disabled = false;
+    closeModal();
+  }
+});
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('show');
+  pendingDeleteId  = null;
+  pendingDeleteAll = false;
+}
+
+async function deleteOne(id) {
+  const { error } = await getSb()
+    .from('partonggoan_rsvp')
+    .delete()
+    .eq('id', id);
+  if (error) { showToast('&#10060; Gagal menghapus', 'err'); console.error(error); return; }
+  showToast('&#9989; Data berhasil dihapus', 'ok');
+  await loadData();
+}
+
+async function deleteAll() {
+  /* Hapus semua baris — filter dummy agar Supabase tidak reject */
+  const { error } = await getSb()
+    .from('partonggoan_rsvp')
+    .delete()
+    .neq('id', '00000000-0000-0000-0000-000000000000');
+  if (error) { showToast('&#10060; Gagal menghapus semua', 'err'); console.error(error); return; }
+  showToast('&#9989; Semua data berhasil dihapus', 'ok');
+  await loadData();
+}
+
+/* ============================================================
+   LOGOUT
+   ============================================================ */
+document.getElementById('btnLogout').addEventListener('click', function() {
+  clearSession();
+  if (_sb) { _sb.removeAllChannels(); _sb = null; }
+  document.getElementById('adminPanel').style.display = 'none';
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('pwdInput').value = '';
+  document.getElementById('loginErr').style.display = 'none';
+});
+
+/* ============================================================
+   REALTIME
+   ============================================================ */
+function startRealtime() {
+  getSb().channel('admin-rsvp-live')
+    .on(
+      'postgres_changes',
+      { event: '*', schema: 'public', table: 'partonggoan_rsvp' },
+      function(payload) {
+        console.log('[Admin Realtime]', payload.eventType);
+        loadData();
+      }
+    )
+    .subscribe(function(status, err) {
+      console.log('[Admin Realtime] status:', status);
+      if (err) console.error('[Admin Realtime] error:', err);
+    });
+}
+
+/* ============================================================
+   TOAST
+   ============================================================ */
+function showToast(msg, type) {
+  const t = document.getElementById('toast');
+  t.innerHTML = msg;
+  t.className = 'toast show ' + (type || 'ok');
+  clearTimeout(t._t);
+  t._t = setTimeout(function() { t.className = 'toast'; }, 3000);
+}
+
+/* ============================================================
+   INIT
+   ============================================================ */
+if (isLoggedIn()) showPanel();
+</script>
+</body>
+</html>
