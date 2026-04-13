@@ -227,11 +227,14 @@ body{
     <div class="login-title">Panel Admin</div>
     <div class="login-sub">Partonggoan Tumpuan Sumbayak 2026</div>
     <div class="inp-wrap">
-      <input type="password" id="pwdInput" placeholder="Masukkan password admin" autocomplete="off">
+      <input type="email" id="emailInput" placeholder="Email admin" autocomplete="email" style="letter-spacing:0;">
+    </div>
+    <div class="inp-wrap">
+      <input type="password" id="pwdInput" placeholder="Password" autocomplete="current-password">
       <button class="eye-btn" id="eyeBtn" type="button">👁</button>
     </div>
     <button class="btn-login" id="btnLogin">Masuk</button>
-    <div class="login-err" id="loginErr">Password salah. Coba lagi.</div>
+    <div class="login-err" id="loginErr">Email atau password salah. Coba lagi.</div>
   </div>
 </div>
 
@@ -297,65 +300,60 @@ body{
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
 /* ============================================================
-   CONFIG — variabel internal, tidak expose sebagai global jelas
+   CONFIG
    ============================================================ */
-const _c = (function() {
-  return {
-    u: 'https://ojbpbgxyehsqbowemnyn.supabase.co',
-    k: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9qYnBiZ3h5ZWhzcWJvd2VtbnluIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE5MDY4MTksImV4cCI6MjA4NzQ4MjgxOX0.KR_4u6Ph3aFM-ZLqRRYztVlbgKNUi7mvrMOyb7k1U_U',
-    /* SHA-256 dari password "tsbpAdmin"
-       Ganti password: hitung di https://emn178.github.io/online-tools/sha256.html */
-    p: 'b3207e909ba77fdf16c8f1c4759ad279768faa468ff0b2c976da441d8e09279d'
-  };
-})();
+const SB_URL = 'https://ojbpbgxyehsqbowemnyn.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9qYnBiZ3h5ZWhzcWJvd2VtbnluIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE5MDY4MTksImV4cCI6MjA4NzQ4MjgxOX0.KR_4u6Ph3aFM-ZLqRRYztVlbgKNUi7mvrMOyb7k1U_U';
 
-/* Supabase client — dibuat hanya setelah login */
-let _sb = null;
-function getSb() {
-  if (!_sb) _sb = supabase.createClient(_c.u, _c.k);
-  return _sb;
-}
+/* Supabase client — satu instance global */
+const _sb = supabase.createClient(SB_URL, SB_KEY);
+function getSb() { return _sb; }
 
 /* ============================================================
-   HASH PASSWORD (Web Crypto API — native, no library)
-   ============================================================ */
-async function sha256(str) {
-  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
-  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
-}
-
-/* ============================================================
-   SESSION
-   ============================================================ */
-const SK = '_adm_s';
-function isLoggedIn()  { return sessionStorage.getItem(SK) === '1'; }
-function setSession()  { sessionStorage.setItem(SK, '1'); }
-function clearSession(){ sessionStorage.removeItem(SK); }
-
-/* ============================================================
-   LOGIN
+   LOGIN — Supabase Auth
    ============================================================ */
 document.getElementById('eyeBtn').addEventListener('click', function() {
   const inp = document.getElementById('pwdInput');
   inp.type = inp.type === 'password' ? 'text' : 'password';
+  this.textContent = inp.type === 'password' ? '👁' : '🙈';
 });
 
 document.getElementById('pwdInput').addEventListener('keydown', function(e) {
   if (e.key === 'Enter') doLogin();
 });
+document.getElementById('emailInput').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') document.getElementById('pwdInput').focus();
+});
 
 document.getElementById('btnLogin').addEventListener('click', doLogin);
 
 async function doLogin() {
-  const val = document.getElementById('pwdInput').value;
-  if (!val) return;
-  const hash = await sha256(val);
-  if (hash === _c.p) {
-    setSession();
+  const email = document.getElementById('emailInput').value.trim();
+  const pwd   = document.getElementById('pwdInput').value;
+  const errEl = document.getElementById('loginErr');
+  const btn   = document.getElementById('btnLogin');
+
+  if (!email || !pwd) {
+    errEl.textContent = 'Email dan password harus diisi.';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  btn.textContent = 'Memverifikasi...';
+  btn.disabled = true;
+  errEl.style.display = 'none';
+
+  try {
+    const { data, error } = await _sb.auth.signInWithPassword({ email, password: pwd });
+    if (error) throw error;
     showPanel();
-  } else {
-    document.getElementById('loginErr').style.display = 'block';
+  } catch(e) {
+    errEl.textContent = 'Email atau password salah. Coba lagi.';
+    errEl.style.display = 'block';
     document.getElementById('pwdInput').value = '';
+  } finally {
+    btn.textContent = 'Masuk';
+    btn.disabled = false;
   }
 }
 
@@ -528,12 +526,13 @@ async function deleteAll() {
 /* ============================================================
    LOGOUT
    ============================================================ */
-document.getElementById('btnLogout').addEventListener('click', function() {
-  clearSession();
-  if (_sb) { _sb.removeAllChannels(); _sb = null; }
+document.getElementById('btnLogout').addEventListener('click', async function() {
+  await _sb.auth.signOut();
+  if (_sb) _sb.removeAllChannels();
   document.getElementById('adminPanel').style.display = 'none';
   document.getElementById('loginScreen').style.display = 'flex';
   document.getElementById('pwdInput').value = '';
+  document.getElementById('emailInput').value = '';
   document.getElementById('loginErr').style.display = 'none';
 });
 
@@ -568,9 +567,20 @@ function showToast(msg, type) {
 }
 
 /* ============================================================
-   INIT
+   INIT — cek session Supabase Auth
    ============================================================ */
-if (isLoggedIn()) showPanel();
+(async function() {
+  const { data: { session } } = await _sb.auth.getSession();
+  if (session) showPanel();
+})();
+
+/* Auto-handle jika session berubah (expired, logout dari tab lain) */
+_sb.auth.onAuthStateChange(function(event, session) {
+  if (event === 'SIGNED_OUT') {
+    document.getElementById('adminPanel').style.display = 'none';
+    document.getElementById('loginScreen').style.display = 'flex';
+  }
+});
 </script>
 </body>
 </html>
