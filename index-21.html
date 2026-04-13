@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Partonggoan Tumpuan Sumbayak 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Cinzel+Decorative:wght@700&family=Cinzel:wght@400;600;700&family=Lato:wght@300;400;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --gold: #f0c040; --gold2: #c9860a;
+  --red: #8b1a05; --red2: #c9400a;
+  --dark: #1e0a04; --cream: rgba(212,149,106,0.85);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+body {
+  background:#0d0502; font-family:'Lato',sans-serif;
+  display:flex; flex-direction:column; align-items:center; min-height:100vh;
+}
+
+/* ===== GORGA ===== */
+.gorga-bar {
+  width:100%; height:18px;
+  background:repeating-linear-gradient(90deg,
+    #8b1a05 0,#8b1a05 8px,#c9860a 8px,#c9860a 16px,
+    #f0c040 16px,#f0c040 20px,#c9860a 20px,#c9860a 28px,
+    #8b1a05 28px,#8b1a05 36px,#f0c040 36px,#f0c040 40px,
+    #c9860a 40px,#c9860a 48px,#8b1a05 48px,#8b1a05 56px);
+}
+.gorga-thin {
+  width:100%; height:5px;
+  background:linear-gradient(90deg,#8b1a05,#f0c040 30%,#c9860a 50%,#f0c040 70%,#8b1a05);
+}
+.gorga-mid {
+  width:100%; height:40px;
+  background:repeating-linear-gradient(90deg,
+    #6b1304 0,#6b1304 6px,#a0520a 6px,#a0520a 12px,
+    #c9860a 12px,#c9860a 15px,#a0520a 15px,#a0520a 21px,
+    #6b1304 21px,#6b1304 27px,#a0520a 27px,#a0520a 33px,
+    #c9860a 33px,#c9860a 36px,#a0520a 36px,#a0520a 42px);
+  display:flex; align-items:center; justify-content:center;
+}
+.gorga-badge {
+  background:linear-gradient(135deg,#1e0a04,#3a1208);
+  border:2px solid #f0c040; padding:4px 28px;
+  font-family:'Cinzel',serif; font-size:11px; font-weight:700;
+  color:#f0c040; letter-spacing:4px; text-transform:uppercase;
+}
+
+/* ===== FLYER ===== */
+.flyer {
+  width:100%; max-width:680px;
+  background:linear-gradient(175deg,#1e0a04 0%,#2e1008 40%,#1a0804 70%,#280d06 100%);
+  overflow:hidden;
+  box-shadow:0 20px 60px rgba(0,0,0,0.9);
+}
+
+.header { padding:24px 5vw 18px; text-align:center; position:relative; }
+.header::before {
+  content:''; position:absolute; top:0; left:50%; transform:translateX(-50%);
+  width:100%; height:260px;
+  background:radial-gradient(ellipse,rgba(180,60,10,0.2) 0%,transparent 70%);
+  pointer-events:none;
+}
+.logo-row { display:flex; align-items:center; justify-content:center; gap:16px; margin-bottom:14px; }
+.logo-wrap { position:relative; flex-shrink:0; }
+.logo-wrap::before {
+  content:''; position:absolute; inset:-4px; border-radius:50%;
+  border:2px solid #c9860a; box-shadow:0 0 16px rgba(201,134,10,0.5);
+}
+.logo-img { width:80px; height:80px; border-radius:50%; object-fit:cover; border:3px solid #f0c040; display:block; }
+.org-info { text-align:left; }
+.org-name1 {
+  font-family:'Cinzel',serif; font-size:clamp(10px,2.5vw,13px); font-weight:700;
+  color:#f0c040; letter-spacing:1px; line-height:1.6; text-transform:uppercase;
+}
+.org-name2 { font-family:'Lato',sans-serif; font-size:clamp(9px,2vw,11px); color:#c9860a; letter-spacing:2px; text-transform:uppercase; margin-top:3px; }
+.divider { display:flex; align-items:center; gap:10px; margin:8px 0 12px; }
+.divider-line { flex:1; height:1px; background:linear-gradient(90deg,transparent,#c9860a 40%,#c9860a 60%,transparent); }
+.divider-cross { color:#f0c040; font-size:20px; }
+.label-undangan { font-family:'Cinzel',serif; font-size:10px; letter-spacing:5px; color:#c9860a; text-transform:uppercase; margin-bottom:6px; }
+.main-title {
+  font-family:'Playfair Display',serif; font-weight:900;
+  font-size:clamp(38px,10vw,60px); color:#fff;
+  text-shadow:0 4px 30px rgba(201,134,10,0.5); line-height:1; margin-bottom:5px;
+}
+.title-accent { font-family:'Cinzel Decorative',serif; font-size:clamp(11px,3vw,15px); color:#f0c040; letter-spacing:3px; }
+
+.section-label {
+  text-align:center; font-family:'Cinzel',serif; font-size:10px; font-weight:700;
+  color:#c9860a; letter-spacing:5px; text-transform:uppercase; padding:20px 0 12px;
+}
+
+.photo-full { margin:0 5vw; position:relative; }
+.photo-full::before {
+  content:''; position:absolute; inset:-5px; border-radius:12px;
+  background:linear-gradient(135deg,#c9860a,#f0c040,#a0520a,#f0c040,#c9860a); z-index:0;
+}
+.photo-full-inner { position:relative; z-index:1; border-radius:8px; overflow:hidden; margin:5px; line-height:0; }
+.img-couple { width:100%; height:auto; display:block; filter:brightness(1.05) contrast(1.04) saturate(1.08); }
+
+.caption-box { margin:14px 5vw 0; text-align:center; }
+.caption-name { font-family:'Playfair Display',serif; font-size:clamp(16px,4.5vw,22px); font-weight:700; color:#fff; line-height:1.3; }
+.caption-role { font-family:'Cinzel',serif; font-size:10px; font-weight:600; color:#c9860a; letter-spacing:3px; text-transform:uppercase; margin-top:4px; }
+.caption-detail { font-family:'Lato',sans-serif; font-size:12px; color:var(--cream); margin-top:3px; line-height:1.5; }
+
+.photo-sep { display:flex; align-items:center; gap:12px; margin:20px 5vw 0; }
+.photo-sep-line { flex:1; height:1px; background:linear-gradient(90deg,transparent,rgba(201,134,10,0.5),transparent); }
+.photo-sep-star { color:#c9860a; font-size:13px; letter-spacing:3px; }
+
+.parambilan-section { display:flex; flex-direction:column; align-items:center; padding:0 5vw 4px; }
+.photo-parambilan-wrap { position:relative; }
+.photo-parambilan-wrap::before {
+  content:''; position:absolute; inset:-5px; border-radius:12px;
+  background:linear-gradient(135deg,#c9860a,#f0c040,#a0520a,#f0c040,#c9860a); z-index:0;
+}
+.photo-parambilan-inner { position:relative; z-index:1; border-radius:8px; overflow:hidden; margin:5px; line-height:0; }
+.img-parambilan { width:min(220px,55vw); height:auto; display:block; filter:brightness(1.05) contrast(1.04) saturate(1.08); }
+.caption-parambilan { margin-top:12px; text-align:center; }
+
+.details-wrap { margin:22px 5vw 0; border:1px solid rgba(201,134,10,0.35); border-radius:8px; overflow:hidden; }
+.details-header {
+  background:linear-gradient(90deg,#6b1304,#a0350a,#6b1304); padding:10px 20px; text-align:center;
+  font-family:'Cinzel',serif; font-size:11px; font-weight:700; color:#f0c040; letter-spacing:4px; text-transform:uppercase;
+}
+.details-body { padding:18px 20px; background:rgba(255,255,255,0.03); display:grid; grid-template-columns:1fr 1fr; gap:14px 20px; }
+.det-item { display:flex; gap:10px; align-items:flex-start; }
+.det-icon { font-size:18px; flex-shrink:0; line-height:1.2; }
+.det-key { font-family:'Lato',sans-serif; font-size:9px; font-weight:700; color:#c9860a; letter-spacing:2px; text-transform:uppercase; margin-bottom:2px; }
+.det-val { font-family:'Playfair Display',serif; font-size:clamp(13px,3.5vw,17px); font-weight:700; color:#fff; line-height:1.25; }
+.det-val.sm { font-size:clamp(12px,3vw,15px); }
+
+.verse { text-align:center; padding:10px 6vw 14px; font-family:'Lato',sans-serif; font-style:italic; font-size:11px; color:rgba(212,149,106,0.65); line-height:1.7; }
+
+/* ===== TOMBOL HADIR ===== */
+.hadir-section {
+  width:100%; max-width:680px;
+  padding:30px 5vw 0;
+  display:flex; flex-direction:column; align-items:center;
+}
+.hadir-headline { font-family:'Playfair Display',serif; font-size:clamp(16px,5vw,22px); color:#f0c040; text-align:center; margin-bottom:6px; }
+.hadir-subline { font-family:'Lato',sans-serif; font-size:12px; color:var(--cream); text-align:center; margin-bottom:22px; }
+
+.btn-hadir-wrap { position:relative; display:inline-flex; justify-content:center; }
+.btn-hadir-wrap::before,
+.btn-hadir-wrap::after {
+  content:''; position:absolute; inset:-8px; border-radius:60px;
+  border:2px solid rgba(240,192,64,0.5);
+  animation:ripple 2s ease-out infinite;
+}
+.btn-hadir-wrap::after { animation-delay:1s; }
+@keyframes ripple {
+  0%   { transform:scale(1); opacity:0.7; }
+  100% { transform:scale(1.35); opacity:0; }
+}
+
+.btn-hadir {
+  position:relative; z-index:2;
+  display:flex; align-items:center; gap:10px;
+  background:linear-gradient(135deg,#8b1a05,#c9400a 50%,#8b1a05);
+  border:2px solid #f0c040; border-radius:50px;
+  padding:16px 36px;
+  font-family:'Cinzel',serif; font-size:clamp(14px,4vw,18px); font-weight:700;
+  color:#f0c040; letter-spacing:2px; text-transform:uppercase;
+  cursor:pointer; outline:none;
+  box-shadow:0 0 30px rgba(201,134,10,0.4), 0 4px 20px rgba(0,0,0,0.5);
+  animation:pulse-btn 2.5s ease-in-out infinite;
+  transition:background 0.3s, border-color 0.3s, color 0.3s, transform 0.15s;
+  -webkit-tap-highlight-color:transparent;
+  border:none; /* reset, add below */
+  border:2px solid #f0c040;
+}
+.btn-hadir:active { transform:scale(0.96); }
+@keyframes pulse-btn {
+  0%,100% { box-shadow:0 0 20px rgba(240,192,64,0.3), 0 4px 20px rgba(0,0,0,0.5); }
+  50%      { box-shadow:0 0 50px rgba(240,192,64,0.8), 0 8px 30px rgba(0,0,0,0.5); }
+}
+.btn-hadir .icon { font-size:22px; animation:wave 1.5s ease-in-out infinite; display:inline-block; }
+@keyframes wave {
+  0%,100% { transform:rotate(-10deg) scale(1); }
+  50%      { transform:rotate(10deg) scale(1.15); }
+}
+
+.bounce-arrow {
+  margin-top:14px; color:#f0c040; font-size:24px;
+  animation:bounce-down 1.2s ease-in-out infinite;
+  transition:transform 0.3s;
+}
+@keyframes bounce-down {
+  0%,100% { transform:translateY(0); opacity:0.6; }
+  50%      { transform:translateY(7px); opacity:1; }
+}
+
+/* ===== RSVP DROPDOWN ===== */
+.rsvp-dropdown {
+  width:100%; max-width:680px;
+  max-height:0; overflow:hidden;
+  transition:max-height 0.5s cubic-bezier(0.4,0,0.2,1), opacity 0.4s;
+  opacity:0;
+}
+.rsvp-dropdown.open { max-height:900px; opacity:1; }
+
+.rsvp-box {
+  margin:16px 5vw 0;
+  background:linear-gradient(160deg,#1e0a04,#2e1008);
+  border:1px solid rgba(201,134,10,0.4);
+  border-radius:12px; padding:24px 20px;
+}
+.rsvp-title {
+  font-family:'Cinzel',serif; font-size:13px; font-weight:700;
+  color:#f0c040; letter-spacing:3px; text-transform:uppercase;
+  text-align:center; margin-bottom:20px;
+}
+
+.form-group { margin-bottom:16px; position:relative; }
+.form-label { font-family:'Lato',sans-serif; font-size:11px; font-weight:700; color:#c9860a; letter-spacing:2px; text-transform:uppercase; margin-bottom:6px; display:block; }
+
+.name-input-wrap { position:relative; }
+.name-input {
+  width:100%; padding:13px 16px;
+  background:rgba(255,255,255,0.06); border:1px solid rgba(201,134,10,0.4);
+  border-radius:8px; color:#fff; font-family:'Lato',sans-serif; font-size:16px;
+  outline:none; transition:border-color 0.2s; -webkit-appearance:none;
+}
+.name-input:focus { border-color:#f0c040; background:rgba(255,255,255,0.09); }
+.name-input::placeholder { color:rgba(212,149,106,0.4); }
+
+.existing-info {
+  margin-top:8px; padding:10px 14px;
+  background:rgba(240,192,64,0.08); border:1px solid rgba(240,192,64,0.35);
+  border-radius:8px; border-left:3px solid #f0c040;
+  font-family:'Lato',sans-serif; font-size:12px; color:#f0c040; line-height:1.5;
+}
+.existing-info strong { color:#fff; }
+
+.autocomplete-list {
+  position:absolute; top:calc(100% + 4px); left:0; right:0; z-index:100;
+  background:#2a0d06; border:1px solid rgba(201,134,10,0.5);
+  border-radius:8px; overflow:hidden; max-height:200px; overflow-y:auto;
+  display:none; box-shadow:0 8px 24px rgba(0,0,0,0.6);
+}
+.autocomplete-list.show { display:block; }
+.autocomplete-item {
+  padding:13px 16px; font-family:'Lato',sans-serif; font-size:15px;
+  color:#fff; cursor:pointer; border-bottom:1px solid rgba(201,134,10,0.15);
+  transition:background 0.15s;
+}
+.autocomplete-item:last-child { border-bottom:none; }
+.autocomplete-item:active, .autocomplete-item:hover { background:rgba(201,134,10,0.2); color:#f0c040; }
+
+.jumlah-row { display:flex; align-items:center; gap:16px; }
+.jumlah-btn {
+  width:46px; height:46px; border-radius:8px;
+  background:rgba(201,134,10,0.2); border:1px solid rgba(201,134,10,0.5);
+  color:#f0c040; font-size:24px; font-weight:700;
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; flex-shrink:0; transition:background 0.15s;
+  -webkit-tap-highlight-color:transparent; user-select:none;
+}
+.jumlah-btn:active { background:rgba(201,134,10,0.4); }
+.jumlah-display { flex:1; text-align:center; font-family:'Playfair Display',serif; font-size:32px; font-weight:700; color:#fff; }
+.jumlah-label { font-family:'Lato',sans-serif; font-size:12px; color:var(--cream); text-align:center; }
+
+.action-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:22px; }
+.btn-action {
+  padding:15px 10px; border-radius:10px;
+  font-family:'Cinzel',serif; font-size:clamp(11px,3vw,13px); font-weight:700;
+  letter-spacing:1px; cursor:pointer; text-align:center;
+  transition:transform 0.15s, opacity 0.15s;
+  -webkit-tap-highlight-color:transparent; outline:none; border:2px solid;
+}
+.btn-action:active { transform:scale(0.96); opacity:0.85; }
+.btn-hadir-yes { background:linear-gradient(135deg,#1a5e1a,#2d8b2d); border-color:#4caf50; color:#c8f7c5; box-shadow:0 4px 16px rgba(76,175,80,0.3); }
+.btn-hadir-no  { background:linear-gradient(135deg,#5e1a1a,#8b2d2d); border-color:#f44336; color:#f7c5c5; box-shadow:0 4px 16px rgba(244,67,54,0.3); }
+
+/* ===== DAFTAR ===== */
+.list-section { width:100%; max-width:680px; padding:24px 5vw 50px; }
+.list-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+.list-title { font-family:'Cinzel',serif; font-size:11px; font-weight:700; color:#f0c040; letter-spacing:4px; text-transform:uppercase; }
+.list-count { background:rgba(201,134,10,0.2); border:1px solid rgba(201,134,10,0.4); border-radius:20px; padding:4px 14px; font-family:'Lato',sans-serif; font-size:12px; font-weight:700; color:#f0c040; }
+.gorga-thin-sep { width:100%; height:3px; background:linear-gradient(90deg,transparent,#c9860a,transparent); margin-bottom:16px; }
+
+.summary-bar { display:flex; gap:10px; margin-bottom:16px; }
+.summary-chip { flex:1; border-radius:8px; padding:12px; text-align:center; border:1px solid; }
+.chip-hadir { background:rgba(76,175,80,0.1); border-color:rgba(76,175,80,0.3); }
+.chip-ijin  { background:rgba(244,67,54,0.1);  border-color:rgba(244,67,54,0.3); }
+.chip-num { font-family:'Playfair Display',serif; font-size:22px; font-weight:700; color:#fff; }
+.chip-lbl { font-family:'Lato',sans-serif; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--cream); margin-top:2px; }
+
+.attendee-card {
+  display:flex; align-items:center; justify-content:space-between;
+  background:rgba(255,255,255,0.04); border:1px solid rgba(201,134,10,0.2);
+  border-radius:8px; padding:12px 16px; margin-bottom:8px;
+  animation:slide-in 0.3s ease;
+}
+@keyframes slide-in {
+  from { opacity:0; transform:translateY(-8px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+.attendee-name { font-family:'Playfair Display',serif; font-size:15px; font-weight:700; color:#fff; }
+.attendee-right { display:flex; align-items:center; gap:8px; }
+.status-badge { font-family:'Lato',sans-serif; font-size:11px; font-weight:700; padding:3px 10px; border-radius:20px; letter-spacing:1px; }
+.badge-hadir { background:rgba(76,175,80,0.2); color:#4caf50; border:1px solid rgba(76,175,80,0.4); }
+.badge-ijin  { background:rgba(244,67,54,0.2);  color:#f44336; border:1px solid rgba(244,67,54,0.4); }
+.attendee-jumlah { font-family:'Lato',sans-serif; font-size:13px; font-weight:700; color:#f0c040; background:rgba(240,192,64,0.1); border-radius:6px; padding:2px 8px; }
+
+.empty-state { text-align:center; padding:30px 0; font-family:'Lato',sans-serif; font-size:13px; color:rgba(212,149,106,0.5); font-style:italic; }
+
+/* ===== SHARE WA BUTTON ===== */
+.share-wa-section {
+  width:100%; max-width:680px;
+  padding:0 5vw 28px;
+  display:flex; flex-direction:column; align-items:center; gap:10px;
+}
+.share-wa-label {
+  font-family:'Lato',sans-serif; font-size:11px; color:rgba(212,149,106,0.6);
+  letter-spacing:2px; text-transform:uppercase; text-align:center;
+}
+.btn-share-wa {
+  display:flex; align-items:center; gap:10px;
+  background:linear-gradient(135deg,#075e54,#128c7e 50%,#075e54);
+  border:2px solid #25d366; border-radius:50px;
+  padding:14px 32px;
+  font-family:'Cinzel',serif; font-size:clamp(13px,3.5vw,16px); font-weight:700;
+  color:#dcf8c6; letter-spacing:2px; text-transform:uppercase;
+  cursor:pointer; outline:none;
+  box-shadow:0 0 24px rgba(37,211,102,0.3), 0 4px 16px rgba(0,0,0,0.5);
+  transition:transform 0.15s, box-shadow 0.2s;
+  -webkit-tap-highlight-color:transparent;
+  animation:pulse-wa 3s ease-in-out infinite;
+}
+.btn-share-wa:active { transform:scale(0.96); }
+@keyframes pulse-wa {
+  0%,100% { box-shadow:0 0 16px rgba(37,211,102,0.25), 0 4px 16px rgba(0,0,0,0.5); }
+  50%      { box-shadow:0 0 40px rgba(37,211,102,0.7), 0 6px 24px rgba(0,0,0,0.5); }
+}
+.btn-share-wa .wa-icon { font-size:22px; }
+
+/* ===== TOAST ===== */
+.toast {
+  position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(100px);
+  border-radius:10px; padding:14px 24px;
+  font-family:'Lato',sans-serif; font-size:13px; font-weight:700;
+  z-index:9999; transition:transform 0.35s, opacity 0.35s;
+  opacity:0; white-space:nowrap; box-shadow:0 8px 24px rgba(0,0,0,0.5);
+  pointer-events:none;
+}
+.toast.show { transform:translateX(-50%) translateY(0); opacity:1; }
+.toast.ok    { background:linear-gradient(135deg,#1a5e1a,#2d8b2d); border:1px solid #4caf50; color:#c8f7c5; }
+.toast.err   { background:linear-gradient(135deg,#5e1a1a,#8b2d2d); border:1px solid #f44336; color:#f7c5c5; }
+</style>
+</head>
+<body>
+
+<!-- FLYER -->
+<div class="flyer">
+  <div class="gorga-bar"></div>
+  <div class="gorga-thin"></div>
+
+  <div class="header">
+    <div class="logo-row">
+      <div class="logo-wrap">
+        <img class="logo-img" src="logo.jpg" alt="Logo TSBP">
+      </div>
+      <div class="org-info">
+        <div class="org-name1">Tumpuan Sumbayak<br>Boru Pakon Panogolan</div>
+        <div class="org-name2">Kota Medan &nbsp;·&nbsp; Rayon Medan Timur</div>
+      </div>
+    </div>
+    <div class="divider">
+      <div class="divider-line"></div>
+      <div class="divider-cross">&#10013;</div>
+      <div class="divider-line"></div>
+    </div>
+    <div class="label-undangan">Pengingat Acara</div>
+    <div class="main-title">PARTONGGOAN</div>
+    <div class="title-accent">Tumpuan Sumbayak &nbsp;&#10022;&nbsp; 2026</div>
+  </div>
+
+  <div class="gorga-mid">
+    <div class="gorga-badge">Harap Hadir Bersama</div>
+  </div>
+
+  <div class="section-label">&#127968;&nbsp; Tuan Rumah</div>
+  <div class="photo-full">
+    <div class="photo-full-inner">
+      <img class="img-couple" src="tuan_rumah.png" alt="Tuan Rumah">
+    </div>
+  </div>
+  <div class="caption-box">
+    <div class="caption-name">St. Em. H. M. Sumbayak / br. Sinaga</div>
+    <div class="caption-role">Tuan Rumah</div>
+    <div class="caption-detail">Jl. Pembangunan III No 13B, Medan Timur</div>
+  </div>
+
+  <div class="photo-sep">
+    <div class="photo-sep-line"></div>
+    <div class="photo-sep-star">&#10022;&nbsp;&#10013;&nbsp;&#10022;</div>
+    <div class="photo-sep-line"></div>
+  </div>
+
+  <div class="section-label" style="padding-top:16px;">&#127897;&nbsp; Parambilan</div>
+  <div class="parambilan-section">
+    <div class="photo-parambilan-wrap">
+      <div class="photo-parambilan-inner">
+        <img class="img-parambilan" src="parambilan.png" alt="Parambilan">
+      </div>
+    </div>
+    <div class="caption-parambilan">
+      <div class="caption-name">St. Jhon Ray Porman Saragih</div>
+      <div class="caption-role">Parambilan</div>
+    </div>
+  </div>
+
+  <div class="details-wrap">
+    <div class="details-header">&#10022;&nbsp; Detail Acara &nbsp;&#10022;</div>
+    <div class="details-body">
+      <div class="det-item">
+        <div class="det-icon">&#128197;</div>
+        <div>
+          <div class="det-key">Hari &amp; Tanggal</div>
+          <div class="det-val">Minggu, 19 April 2026</div>
+        </div>
+      </div>
+      <div class="det-item">
+        <div class="det-icon">&#128336;</div>
+        <div>
+          <div class="det-key">Jam Masuk</div>
+          <div class="det-val">13.00 WIB</div>
+        </div>
+      </div>
+      <div class="det-item" style="grid-column:1/-1;">
+        <div class="det-icon">&#128205;</div>
+        <div>
+          <div class="det-key">Lokasi</div>
+          <div class="det-val sm">Rumah St. Em. H. M. Sumbayak / br. Sinaga<br>Jl. Pembangunan 3, Medan Timur</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="verse">
+    "Sebab di mana dua atau tiga orang berkumpul dalam nama-Ku,<br>
+    di situ Aku ada di tengah-tengah mereka." &#8212; Matius 18:20
+  </div>
+
+  <div class="gorga-thin"></div>
+  <div class="gorga-bar"></div>
+</div>
+
+<!-- TOMBOL HADIR -->
+<div class="hadir-section">
+  <div class="hadir-headline">Konfirmasi Kehadiran Anda</div>
+  <div class="hadir-subline">Klik tombol di bawah untuk konfirmasi hadir atau ijin</div>
+  <div class="btn-hadir-wrap">
+    <button class="btn-hadir" id="btnHadir" onclick="toggleRsvp()">
+      <span class="icon">&#128588;</span>
+      KONFIRMASI HADIR
+    </button>
+  </div>
+  <div class="bounce-arrow" id="bounceArrow">&#9660;</div>
+</div>
+
+<!-- SHARE WA -->
+<div class="share-wa-section">
+  <div class="share-wa-label">&#128203;&nbsp; Bagikan rekap kehadiran ke grup</div>
+  <button class="btn-share-wa" id="btnShareWA" onclick="shareWA()">
+    <span class="wa-icon">&#128241;</span>
+    SHARE REKAP VIA WHATSAPP
+  </button>
+</div>
+
+<!-- RSVP DROPDOWN -->
+<div class="rsvp-dropdown" id="rsvpDropdown">
+  <div class="rsvp-box">
+    <div class="rsvp-title">&#10022;&nbsp; Isi Konfirmasi &nbsp;&#10022;</div>
+
+    <div class="form-group">
+      <label class="form-label">Nama Anggota</label>
+      <div class="name-input-wrap">
+        <input type="text" class="name-input" id="namaInput"
+          placeholder="Ketik nama anggota..." autocomplete="off">
+        <div class="autocomplete-list" id="autocompleteList"></div>
+      </div>
+      <div class="existing-info" id="existingInfo" style="display:none;"></div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Jumlah yang Hadir</label>
+      <div class="jumlah-row">
+        <div class="jumlah-btn" id="btnMin">&#8722;</div>
+        <div>
+          <div class="jumlah-display" id="jumlahDisplay">1</div>
+          <div class="jumlah-label">orang</div>
+        </div>
+        <div class="jumlah-btn" id="btnPlus">&#43;</div>
+      </div>
+    </div>
+
+    <div class="action-row">
+      <button class="btn-action btn-hadir-yes" id="btnYes">&#9989; Saya Hadir</button>
+      <button class="btn-action btn-hadir-no"  id="btnNo">&#128591; Saya Ijin</button>
+    </div>
+  </div>
+</div>
+
+<!-- DAFTAR HADIR -->
+<div class="list-section">
+  <div class="gorga-thin-sep"></div>
+  <div class="list-header">
+    <div class="list-title">&#128203;&nbsp; Daftar Konfirmasi</div>
+    <div class="list-count" id="listCount">0 anggota</div>
+  </div>
+  <div class="summary-bar">
+    <div class="summary-chip chip-hadir">
+      <div class="chip-num" id="totalHadir">0</div>
+      <div class="chip-lbl">Hadir</div>
+    </div>
+    <div class="summary-chip chip-ijin">
+      <div class="chip-num" id="totalIjin">0</div>
+      <div class="chip-lbl">Ijin</div>
+    </div>
+  </div>
+  <div id="attendeeList">
+    <div class="empty-state">Belum ada konfirmasi. Jadilah yang pertama! &#127881;</div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+/* =====================================================
+   CONFIG
+   ===================================================== */
+const SB_URL = 'https://ojbpbgxyehsqbowemnyn.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9qYnBiZ3h5ZWhzcWJvd2VtbnluIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE5MDY4MTksImV4cCI6MjA4NzQ4MjgxOX0.KR_4u6Ph3aFM-ZLqRRYztVlbgKNUi7mvrMOyb7k1U_U';
+
+/* Supabase JS client */
+const sb = supabase.createClient(SB_URL, SB_KEY, {
+  realtime: { params: { eventsPerSecond: 10 } }
+});
+
+/* =====================================================
+   STATE
+   ===================================================== */
+let members = [], jumlah = 1, rsvpOpen = false;
+let rsvpCache = {};
+
+/* =====================================================
+   MEMBERS AUTOCOMPLETE
+   ===================================================== */
+async function loadMembers() {
+  try {
+    const { data, error } = await sb.from('anggota').select('nama').order('nama');
+    if (error) throw error;
+    members = Array.isArray(data) ? data.map(x => x.nama).filter(Boolean) : [];
+  } catch(e) { console.error('loadMembers:', e); }
+}
+
+const namaInput = document.getElementById('namaInput');
+const acList    = document.getElementById('autocompleteList');
+
+let _pfTimer = null;
+namaInput.addEventListener('input', function() {
+  showSuggestions();
+  clearTimeout(_pfTimer);
+  _pfTimer = setTimeout(function() {
+    const nm = namaInput.value.trim();
+    if (nm) {
+      prefillIfExists(nm);
+    } else {
+      jumlah = 1;
+      document.getElementById('jumlahDisplay').textContent = '1';
+      document.getElementById('existingInfo').style.display = 'none';
+    }
+  }, 400);
+});
+namaInput.addEventListener('focus', showSuggestions);
+
+function showSuggestions() {
+  const q = namaInput.value.toLowerCase().trim();
+  const filtered = q
+    ? members.filter(n => n.toLowerCase().includes(q)).slice(0, 8)
+    : members.slice(0, 8);
+  if (!filtered.length) { acList.classList.remove('show'); return; }
+  acList.innerHTML = filtered.map(n =>
+    '<div class="autocomplete-item">' + n + '</div>'
+  ).join('');
+  acList.classList.add('show');
+}
+
+acList.addEventListener('click', function(e) {
+  const item = e.target.closest('.autocomplete-item');
+  if (item) {
+    namaInput.value = item.textContent;
+    acList.classList.remove('show');
+    prefillIfExists(item.textContent);
+  }
+});
+
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.name-input-wrap')) acList.classList.remove('show');
+});
+
+/* =====================================================
+   JUMLAH BUTTONS
+   ===================================================== */
+document.getElementById('btnMin').addEventListener('click', function() {
+  jumlah = Math.max(1, jumlah - 1);
+  document.getElementById('jumlahDisplay').textContent = jumlah;
+});
+document.getElementById('btnPlus').addEventListener('click', function() {
+  jumlah = Math.min(20, jumlah + 1);
+  document.getElementById('jumlahDisplay').textContent = jumlah;
+});
+
+/* =====================================================
+   TOGGLE RSVP PANEL
+   ===================================================== */
+function toggleRsvp() {
+  rsvpOpen = !rsvpOpen;
+  const dd  = document.getElementById('rsvpDropdown');
+  const arr = document.getElementById('bounceArrow');
+  const btn = document.getElementById('btnHadir');
+  if (rsvpOpen) {
+    dd.classList.add('open');
+    arr.style.transform = 'rotate(180deg)';
+    btn.style.background = 'linear-gradient(135deg,#1a5e1a,#2d8b2d)';
+    btn.style.borderColor = '#4caf50';
+    btn.style.color = '#c8f7c5';
+    btn.style.animationPlayState = 'paused';
+    setTimeout(function() { dd.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 100);
+  } else {
+    dd.classList.remove('open');
+    arr.style.transform = '';
+    btn.style.cssText = '';
+  }
+}
+
+/* =====================================================
+   SUBMIT RSVP
+   ===================================================== */
+async function submitRsvp(status) {
+  const nama = namaInput.value.trim();
+  if (!nama) { showToast('Nama harus diisi!', 'err'); return; }
+
+  /* Kalau ijin, jumlah tidak relevan → paksa 1 */
+  const jmlFinal = status === 'hadir' ? jumlah : 1;
+  const btnYes = document.getElementById('btnYes');
+  const btnNo  = document.getElementById('btnNo');
+  btnYes.disabled = true;
+  btnNo.disabled  = true;
+  const activeBtn = status === 'hadir' ? btnYes : btnNo;
+  activeBtn.textContent = 'Menyimpan...';
+
+  try {
+    /* Cek apakah nama sudah ada (case-insensitive) */
+    const { data: existing, error: checkErr } = await sb
+      .from('partonggoan_rsvp')
+      .select('id, status, jumlah')
+      .ilike('nama', nama)
+      .limit(1);
+
+    if (checkErr) throw checkErr;
+
+    let saveErr, isUpdate = false;
+
+    if (existing && existing.length > 0) {
+      /* UPDATE — tidak akan double data */
+      isUpdate = true;
+      const { error } = await sb
+        .from('partonggoan_rsvp')
+        .update({ jumlah: jmlFinal, status: status })
+        .eq('id', existing[0].id);
+      saveErr = error;
+    } else {
+      /* INSERT — data baru */
+      const { error } = await sb
+        .from('partonggoan_rsvp')
+        .insert({ nama: nama, jumlah: jmlFinal, status: status });
+      saveErr = error;
+    }
+
+    if (saveErr) throw saveErr;
+
+    const isHadir = status === 'hadir';
+    const msg = isUpdate
+      ? (isHadir ? 'Data diperbarui! Sampai jumpa \uD83C\uDF89' : 'Data diperbarui! Ijin dicatat \uD83D\uDE4F')
+      : (isHadir ? 'Terima kasih! Sampai jumpa! \uD83C\uDF89' : 'Baik, ijin dicatat! \uD83D\uDE4F');
+    showToast(msg, 'ok');
+    sendWA(nama, jmlFinal, status, isUpdate);
+
+    namaInput.value = '';
+    jumlah = 1;
+    document.getElementById('jumlahDisplay').textContent = '1';
+    document.getElementById('existingInfo').style.display = 'none';
+    toggleRsvp();
+
+    /* Realtime akan auto-refresh, ini hanya safety fallback */
+    setTimeout(loadAttendees, 600);
+
+  } catch(e) {
+    console.error('submitRsvp error:', e);
+    showToast('Gagal menyimpan. Coba lagi.', 'err');
+  } finally {
+    btnYes.disabled = false;
+    btnNo.disabled  = false;
+    btnYes.innerHTML = '&#9989; Saya Hadir';
+    btnNo.innerHTML  = '&#128591; Saya Ijin';
+  }
+}
+
+document.getElementById('btnYes').addEventListener('click', function() { submitRsvp('hadir'); });
+document.getElementById('btnNo').addEventListener('click',  function() { submitRsvp('ijin');  });
+
+/* =====================================================
+   BUILD REKAP TEXT (dipakai oleh shareWA & sendWA)
+   ===================================================== */
+function getPageUrl() {
+  var url = window.location.href;
+  return url.startsWith('file://') ? '[URL halaman absen]' : url;
+}
+
+function buildRekapText() {
+  var data = Object.values(rsvpCache);
+  var hadir = data.filter(function(d) { return d.status === 'hadir'; });
+  var ijin  = data.filter(function(d) { return d.status === 'ijin';  });
+  var totalOrg = hadir.reduce(function(s, d) { return s + (d.jumlah || 1); }, 0);
+
+  var txt =
+    '\uD83D\uDD14 *REKAP KONFIRMASI PARTONGGOAN* \uD83D\uDD14\n' +
+    '*Tumpuan Sumbayak Boru Pakon Panogolan*\n' +
+    '_Kota Medan \u00B7 Rayon Medan Timur_\n' +
+    '\u2015\u2015\u2015\u2015\u2015\u2015\u2015\u2015\u2015\u2015\u2015\u2015\u2015\u2015\n' +
+    '\uD83D\uDCC5 *Minggu, 19 April 2026* \u2022 13.00 WIB\n' +
+    '\uD83D\uDCCD Jl. Pembangunan 3, Medan Timur\n' +
+    '\u2015\u2015\u2015\u2015\u2015\u2015\u2015\u2015\u2015\u2015\u2015\u2015\u2015\u2015\n\n' +
+    '\u2705 *HADIR: ' + hadir.length + ' keluarga (' + totalOrg + ' orang)*\n';
+
+  if (hadir.length) {
+    hadir.forEach(function(d, i) {
+      txt += (i + 1) + '. ' + d.nama + ' (' + (d.jumlah || 1) + ' org)\n';
+    });
+  } else {
+    txt += '_Belum ada_\n';
+  }
+
+  txt += '\n\uD83D\uDE4F *IJIN: ' + ijin.length + ' keluarga*\n';
+  if (ijin.length) {
+    ijin.forEach(function(d, i) {
+      txt += (i + 1) + '. ' + d.nama + '\n';
+    });
+  } else {
+    txt += '_Belum ada_\n';
+  }
+
+  txt +=
+    '\n\u2015\u2015\u2015\u2015\u2015\u2015\u2015\u2015\u2015\u2015\u2015\u2015\u2015\u2015\n' +
+    '_Via Flyer Digital TSBP Medan Timur_\n' +
+    '\uD83D\uDD17 *Link Absen Online:*\n' +
+    getPageUrl();
+
+  return txt;
+}
+
+/* =====================================================
+   SHARE REKAP WHATSAPP (tombol manual)
+   ===================================================== */
+function shareWA() {
+  window.open('https://wa.me/?text=' + encodeURIComponent(buildRekapText()), '_blank');
+}
+
+/* =====================================================
+   WHATSAPP — setelah submit absen: konfirmasi + rekap
+   ===================================================== */
+function sendWA(nama, jumlah, status, isUpdate) {
+  const stTxt = status === 'hadir'
+    ? '\u2705 *HADIR* (' + jumlah + ' orang)'
+    : '\uD83D\uDE4F *IJIN* Tidak Hadir';
+  const prefix = isUpdate ? '\uD83D\uDD04 *Perubahan Konfirmasi*' : '\uD83C\uDF89 *Konfirmasi Baru*';
+
+  /* Tunggu sebentar agar rsvpCache sudah ter-update loadAttendees */
+  setTimeout(function() {
+    const msg =
+      prefix + '\n' +
+      '\uD83D\uDC64 *' + nama + '*  \u2192  ' + stTxt + '\n\n' +
+      buildRekapText();
+    window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
+  }, 700);
+}
+
+/* =====================================================
+   LOAD & RENDER ATTENDEES
+   ===================================================== */
+async function loadAttendees() {
+  try {
+    const { data, error } = await sb
+      .from('partonggoan_rsvp')
+      .select('*')
+      .order('created_at', { ascending: false });
+    if (error) throw error;
+    renderList(data || []);
+  } catch(e) { console.error('loadAttendees:', e); }
+}
+
+function renderList(data) {
+  const listEl  = document.getElementById('attendeeList');
+  const countEl = document.getElementById('listCount');
+  const hadirEl = document.getElementById('totalHadir');
+  const ijinEl  = document.getElementById('totalIjin');
+
+  rsvpCache = {};
+  data.forEach(function(d) { rsvpCache[d.nama.toLowerCase()] = d; });
+
+  const hadir    = data.filter(function(d) { return d.status === 'hadir'; });
+  const ijin     = data.filter(function(d) { return d.status === 'ijin'; });
+  const totalOrg = hadir.reduce(function(s, d) { return s + (d.jumlah || 1); }, 0);
+
+  countEl.textContent = data.length + ' anggota';
+  hadirEl.textContent = hadir.length + ' (' + totalOrg + ' org)';
+  ijinEl.textContent  = ijin.length;
+
+  if (!data.length) {
+    listEl.innerHTML = '<div class="empty-state">Belum ada konfirmasi. Jadilah yang pertama! &#127881;</div>';
+    return;
+  }
+
+  listEl.innerHTML = data.map(function(d) {
+    return '<div class="attendee-card">' +
+      '<div class="attendee-name">' + d.nama + '</div>' +
+      '<div class="attendee-right">' +
+        '<span class="status-badge ' + (d.status === 'hadir' ? 'badge-hadir' : 'badge-ijin') + '">' +
+          (d.status === 'hadir' ? '&#9989; Hadir' : '&#128591; Ijin') +
+        '</span>' +
+        (d.status === 'hadir' ? '<span class="attendee-jumlah">' + (d.jumlah || 1) + ' org</span>' : '') +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+/* =====================================================
+   PREFILL FORM
+   ===================================================== */
+function prefillIfExists(nama) {
+  const existing = rsvpCache[nama.toLowerCase()];
+  const infoEl   = document.getElementById('existingInfo');
+  if (existing) {
+    jumlah = existing.jumlah || 1;
+    document.getElementById('jumlahDisplay').textContent = jumlah;
+    const stLabel = existing.status === 'hadir'
+      ? '&#9989; Hadir (' + jumlah + ' orang)'
+      : '&#128591; Ijin Tidak Hadir';
+    infoEl.innerHTML = '&#9888;&#65039; Sudah konfirmasi: <strong>' + stLabel + '</strong> &mdash; Ubah jika ada perubahan';
+    infoEl.style.display = 'block';
+  } else {
+    jumlah = 1;
+    document.getElementById('jumlahDisplay').textContent = '1';
+    infoEl.style.display = 'none';
+  }
+}
+
+/* =====================================================
+   TOAST
+   ===================================================== */
+function showToast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show ' + (type || 'ok');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(function() { t.className = 'toast'; }, 3000);
+}
+
+/* =====================================================
+   SUPABASE REALTIME
+   ===================================================== */
+function startRealtime() {
+  sb.channel('rsvp-live')
+    .on(
+      'postgres_changes',
+      { event: '*', schema: 'public', table: 'partonggoan_rsvp' },
+      function(payload) {
+        console.log('[Realtime] event:', payload.eventType);
+        loadAttendees();
+      }
+    )
+    .subscribe(function(status, err) {
+      console.log('[Realtime] status:', status);
+      if (err) console.error('[Realtime] error:', err);
+    });
+}
+
+/* =====================================================
+   INIT
+   ===================================================== */
+loadMembers();
+loadAttendees();
+startRealtime();
+setInterval(loadAttendees, 30000);
+</script>
+</body>
+</html>
