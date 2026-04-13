@@ -225,6 +225,14 @@ body {
 .name-input:focus { border-color:#f0c040; background:rgba(255,255,255,0.09); }
 .name-input::placeholder { color:rgba(212,149,106,0.4); }
 
+.existing-info {
+  margin-top:8px; padding:10px 14px;
+  background:rgba(240,192,64,0.08); border:1px solid rgba(240,192,64,0.35);
+  border-radius:8px; border-left:3px solid #f0c040;
+  font-family:'Lato',sans-serif; font-size:12px; color:#f0c040; line-height:1.5;
+}
+.existing-info strong { color:#fff; }
+
 .autocomplete-list {
   position:absolute; top:calc(100% + 4px); left:0; right:0; z-index:100;
   background:#2a0d06; border:1px solid rgba(201,134,10,0.5);
@@ -435,6 +443,7 @@ body {
           placeholder="Ketik nama anggota..." autocomplete="off">
         <div class="autocomplete-list" id="autocompleteList"></div>
       </div>
+      <div class="existing-info" id="existingInfo" style="display:none;"></div>
     </div>
 
     <div class="form-group">
@@ -520,7 +529,11 @@ function showSuggestions() {
 
 acList.addEventListener('click', function(e) {
   const item = e.target.closest('.autocomplete-item');
-  if (item) { namaInput.value = item.textContent; acList.classList.remove('show'); }
+  if (item) {
+    namaInput.value = item.textContent;
+    acList.classList.remove('show');
+    prefillIfExists(item.textContent);
+  }
 });
 
 document.addEventListener('click', function(e) {
@@ -557,20 +570,48 @@ async function submitRsvp(status) {
   const nama = namaInput.value.trim();
   if (!nama) { showToast('Nama harus diisi!', 'err'); return; }
 
-  const btn = status === 'hadir' ? document.getElementById('btnYes') : document.getElementById('btnNo');
-  btn.disabled = true;
-  btn.textContent = 'Menyimpan...';
+  const btnYes = document.getElementById('btnYes');
+  const btnNo  = document.getElementById('btnNo');
+  btnYes.disabled = true;
+  btnNo.disabled  = true;
+  const activeBtn = status === 'hadir' ? btnYes : btnNo;
+  activeBtn.textContent = 'Menyimpan...';
 
   try {
-    const res = await fetch(SB_URL + '/rest/v1/partonggoan_rsvp', {
-      method: 'POST',
-      headers: Object.assign({}, H, { 'Prefer': 'return=minimal' }),
-      body: JSON.stringify({ nama, jumlah, status })
-    });
+    // Cek apakah nama sudah ada
+    const checkRes = await fetch(
+      SB_URL + '/rest/v1/partonggoan_rsvp?nama=eq.' + encodeURIComponent(nama) + '&select=id,status,jumlah',
+      { headers: H }
+    );
+    const existing = await checkRes.json();
+
+    let res, isUpdate = false;
+
+    if (existing && existing.length > 0) {
+      // UPDATE — data sudah ada, tidak double
+      const id = existing[0].id;
+      isUpdate = true;
+      res = await fetch(SB_URL + '/rest/v1/partonggoan_rsvp?id=eq.' + id, {
+        method: 'PATCH',
+        headers: Object.assign({}, H, { 'Prefer': 'return=minimal' }),
+        body: JSON.stringify({ jumlah, status })
+      });
+    } else {
+      // INSERT — data baru
+      res = await fetch(SB_URL + '/rest/v1/partonggoan_rsvp', {
+        method: 'POST',
+        headers: Object.assign({}, H, { 'Prefer': 'return=minimal' }),
+        body: JSON.stringify({ nama, jumlah, status })
+      });
+    }
+
     if (!res.ok) { const t = await res.text(); throw new Error(t); }
 
-    showToast(status === 'hadir' ? 'Terima kasih! Sampai jumpa!' : 'Baik, sudah dicatat!', 'ok');
-    sendWA(nama, jumlah, status);
+    const msg = isUpdate
+      ? (status === 'hadir' ? 'Data diperbarui! Sampai jumpa \uD83C\uDF89' : 'Data diperbarui! Ijin dicatat \uD83D\uDE4F')
+      : (status === 'hadir' ? 'Terima kasih! Sampai jumpa! \uD83C\uDF89' : 'Baik, ijin dicatat! \uD83D\uDE4F');
+    showToast(msg, 'ok');
+    sendWA(nama, jumlah, status, isUpdate);
 
     namaInput.value = '';
     jumlah = 1;
@@ -581,8 +622,10 @@ async function submitRsvp(status) {
     console.error(e);
     showToast('Gagal menyimpan. Coba lagi.', 'err');
   } finally {
-    btn.disabled = false;
-    btn.innerHTML = status === 'hadir' ? '&#9989; Saya Hadir' : '&#128591; Saya Ijin';
+    btnYes.disabled = false;
+    btnNo.disabled  = false;
+    btnYes.innerHTML = '&#9989; Saya Hadir';
+    btnNo.innerHTML  = '&#128591; Saya Ijin';
   }
 }
 
@@ -590,12 +633,13 @@ document.getElementById('btnYes').addEventListener('click', function() { submitR
 document.getElementById('btnNo').addEventListener('click',  function() { submitRsvp('ijin');  });
 
 /* ---- WhatsApp ---- */
-function sendWA(nama, jumlah, status) {
+function sendWA(nama, jumlah, status, isUpdate) {
   const stTxt = status === 'hadir'
     ? '✅ *HADIR* (' + jumlah + ' orang)'
     : '🙏 *IJIN TIDAK HADIR*';
+  const prefix = isUpdate ? '🔄 *Perubahan Konfirmasi*' : '🔔 *Konfirmasi Kehadiran*';
   const msg =
-    '🔔 *Konfirmasi Kehadiran Partonggoan*\n' +
+    prefix + ' Partonggoan\n' +
     '📅 Minggu, 19 April 2026 | 13.00 WIB\n' +
     '📍 Jl. Pembangunan 3, Medan Timur\n\n' +
     '👤 Nama: *' + nama + '*\n' +
@@ -614,14 +658,21 @@ async function loadAttendees() {
   } catch(e) { console.error('loadAttendees:', e); }
 }
 
+// Cache rsvp data for prefill
+let rsvpCache = {};
+
 function renderList(data) {
   const listEl   = document.getElementById('attendeeList');
   const countEl  = document.getElementById('listCount');
   const hadirEl  = document.getElementById('totalHadir');
   const ijinEl   = document.getElementById('totalIjin');
 
-  const hadir = data.filter(d => d.status === 'hadir');
-  const ijin  = data.filter(d => d.status === 'ijin');
+  // Update cache for prefill
+  rsvpCache = {};
+  data.forEach(function(d) { rsvpCache[d.nama.toLowerCase()] = d; });
+
+  const hadir = data.filter(function(d) { return d.status === 'hadir'; });
+  const ijin  = data.filter(function(d) { return d.status === 'ijin'; });
   const totalOrg = hadir.reduce(function(s,d){ return s + (d.jumlah||1); }, 0);
 
   countEl.textContent = data.length + ' anggota';
@@ -644,6 +695,25 @@ function renderList(data) {
       '</div>' +
     '</div>';
   }).join('');
+}
+
+// Prefill form if name already has RSVP
+function prefillIfExists(nama) {
+  const existing = rsvpCache[nama.toLowerCase()];
+  const infoEl = document.getElementById('existingInfo');
+  if (existing) {
+    jumlah = existing.jumlah || 1;
+    document.getElementById('jumlahDisplay').textContent = jumlah;
+    const stLabel = existing.status === 'hadir'
+      ? '&#9989; Hadir (' + jumlah + ' orang)'
+      : '&#128591; Ijin Tidak Hadir';
+    infoEl.innerHTML = '&#9888;&#65039; Sudah konfirmasi: <strong>' + stLabel + '</strong> &mdash; Ubah jika ada perubahan';
+    infoEl.style.display = 'block';
+  } else {
+    jumlah = 1;
+    document.getElementById('jumlahDisplay').textContent = '1';
+    infoEl.style.display = 'none';
+  }
 }
 
 /* ---- Toast ---- */
